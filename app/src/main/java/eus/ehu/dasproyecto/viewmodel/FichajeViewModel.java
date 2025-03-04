@@ -34,4 +34,10 @@ public class FichajeViewModel extends AndroidViewModel {
                 .fichajeDao()
                 .insertarFichaje(fichaje)).start();
     }
+
+    public void actualizarFichaje(Fichaje fichaje) {
+        new Thread(() -> FichajeDatabase.getInstance(getApplication())
+                .fichajeDao()
+                .actualizarFichaje(fichaje)).start();
+    }
 }
