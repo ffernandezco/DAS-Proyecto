@@ -12,6 +12,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "fichaje_db";
     private static final int DATABASE_VERSION = 1;
 
+    //Inicializar tabla de fichajes
+
     private static final String TABLE_FICHAJES = "fichajes";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_FECHA = "fecha";
@@ -55,10 +57,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
+    // Devuelve el listado completo, e.g. RecyclerView
     public List<Fichaje> obtenerTodosLosFichajes() {
         List<Fichaje> listaFichajes = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_FICHAJES + " ORDER BY fecha DESC", null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_FICHAJES + " ORDER BY fecha DESC, hora_entrada DESC", null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -78,6 +81,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return listaFichajes;
     }
 
+    // Devuelve el último fichaje para poderlo actualizar (trampa con limit)
     public Fichaje obtenerUltimoFichajeDelDia(String fecha) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_FICHAJES + " WHERE fecha = ? ORDER BY hora_entrada DESC LIMIT 1",
@@ -101,10 +105,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return null;
     }
 
+    //Añade la hora de salida y la ubicación
     public void actualizarFichaje(Fichaje fichaje) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_HORA_SALIDA, fichaje.horaSalida);
+        values.put(COLUMN_LATITUD, fichaje.latitud);
+        values.put(COLUMN_LONGITUD, fichaje.longitud);
 
         db.update(TABLE_FICHAJES, values, COLUMN_ID + " = ?", new String[]{String.valueOf(fichaje.id)});
         db.close();
