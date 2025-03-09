@@ -1,4 +1,5 @@
-package eus.ehu.dasproyecto.ui;
+package eus.ehu.dasproyecto;
+
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,12 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.List;
-
-import eus.ehu.dasproyecto.R;
-import eus.ehu.dasproyecto.data.Fichaje;
-
-import android.util.Log;
+import java.util.*;
 
 public class FichajeAdapter extends RecyclerView.Adapter<FichajeAdapter.FichajeViewHolder> {
     private List<Fichaje> fichajes;
@@ -34,8 +30,6 @@ public class FichajeAdapter extends RecyclerView.Adapter<FichajeAdapter.FichajeV
     @Override
     public void onBindViewHolder(@NonNull FichajeViewHolder holder, int position) {
         Fichaje fichaje = fichajes.get(position);
-        Log.d("FichajeAdapter", "Mostrando fichaje: " + fichaje.fecha + " " + fichaje.horaEntrada);
-
         holder.tvFecha.setText(fichaje.fecha);
         holder.tvHoraEntrada.setText(fichaje.horaEntrada);
         holder.tvHoraSalida.setText(fichaje.horaSalida);
