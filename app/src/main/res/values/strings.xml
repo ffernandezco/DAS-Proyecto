@@ -22,4 +22,11 @@
     <string name="language">Idioma de la aplicación</string>
     <string name="settings_updated">Configuración actualizada correctamente</string>
     <string name="save">Guardar</string>
+    <string name="weekly_hours">Horas semanales</string>
+    <string name="working_days">Días laborables por semana</string>
+    <string name="settings_incomplete">Por favor complete todos los ajustes</string>
+    <string name="invalid_settings">Valores de configuración no válidos</string>
+    <string name="time_worked">Tiempo trabajado hoy: %1$s</string>
+    <string name="time_remaining">Tiempo restante: %1$s</string>
+    <string name="overtime">Horas extra: %1$s</string>
 </resources>

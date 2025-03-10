@@ -22,4 +22,11 @@
     <string name="language">App language</string>
     <string name="settings_updated">Settings updated</string>
     <string name="save">Save</string>
+    <string name="weekly_hours">Weekly working hours</string>
+    <string name="working_days">Working days per week</string>
+    <string name="settings_incomplete">Please fill in all settings</string>
+    <string name="invalid_settings">Invalid settings values</string>
+    <string name="time_worked">Time worked today: %1$s</string>
+    <string name="time_remaining">Time remaining: %1$s</string>
+    <string name="overtime">Overtime: %1$s</string>
 </resources>

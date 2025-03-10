@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,14 +30,19 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseHelper dbHelper;
     private FichajeAdapter adapter;
     private TextView tvEstadoFichaje;
+    private TextView tvTimeWorked;     // New TextView for time worked
+    private TextView tvTimeRemaining;  // New TextView for time remaining
     private Button btnFichar;
+
+    private Handler timerHandler = new Handler();
+    private Runnable timerRunnable;
 
     private FusedLocationProviderClient fusedLocationClient;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        loadSavedLanguage(); //Carga el idioma lo primero
+        loadSavedLanguage();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -45,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize UI components
         tvEstadoFichaje = findViewById(R.id.tvEstadoFichaje);
+        tvTimeWorked = findViewById(R.id.tvTimeWorked);
+        tvTimeRemaining = findViewById(R.id.tvTimeRemaining);
         btnFichar = findViewById(R.id.btnFichar);
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
@@ -59,12 +67,20 @@ public class MainActivity extends AppCompatActivity {
         actualizarEstadoUI();
         actualizarLista();
 
+        // Setup timer to update the timer display every minute
+        timerRunnable = new Runnable() {
+            @Override
+            public void run() {
+                actualizarEstadoUI();
+                timerHandler.postDelayed(this, 60000); // Update every minute
+            }
+        };
+
         Button btnSettings = findViewById(R.id.btnSettings);
         btnSettings.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
         });
-
     }
 
     @Override
@@ -73,6 +89,16 @@ public class MainActivity extends AppCompatActivity {
         // Update UI state when returning to the activity
         actualizarEstadoUI();
         actualizarLista();
+
+        // Start the timer updates
+        timerHandler.postDelayed(timerRunnable, 1000);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Stop timer updates when app is in background
+        timerHandler.removeCallbacks(timerRunnable);
     }
 
     private void loadSavedLanguage() {
@@ -165,17 +191,42 @@ public class MainActivity extends AppCompatActivity {
         SimpleDateFormat sdfFecha = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         String fechaActual = sdfFecha.format(new Date());
 
-        Fichaje ultimoFichaje = dbHelper.obtenerUltimoFichajeDelDia(fechaActual);
+        List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy();
 
-        if (ultimoFichaje == null || ultimoFichaje.horaSalida != null) {
-            // No hay fichaje o el último fichaje ya tiene hora de salida (no fichado)
+        float[] settings = dbHelper.getSettings();
+        float weeklyHours = settings[0];
+        int workingDays = (int) settings[1];
+
+        float dailyHours = WorkTimeCalculator.calculateDailyHours(weeklyHours, workingDays);
+
+        long minutesWorked = WorkTimeCalculator.getMinutesWorkedToday(todaysFichajes);
+
+        long minutesRemaining = WorkTimeCalculator.getRemainingMinutes(minutesWorked, dailyHours);
+
+        String timeWorked = WorkTimeCalculator.formatMinutes(minutesWorked);
+        String timeRemaining = WorkTimeCalculator.formatMinutes(minutesRemaining);
+
+        // Actualizar UI
+        boolean isClockedIn = WorkTimeCalculator.isCurrentlyClockedIn(todaysFichajes);
+
+        // Textos a mostrar
+        if (isClockedIn) {
+            tvEstadoFichaje.setText(getString(R.string.estado_fichado));
+            btnFichar.setText(getString(R.string.fichar_salida));
+        } else {
             tvEstadoFichaje.setText(getString(R.string.estado_no_fichado));
             btnFichar.setText(getString(R.string.fichar_entrada));
+        }
+
+        tvTimeWorked.setText(getString(R.string.time_worked, timeWorked));
+
+        if (minutesRemaining > 0) {
+            tvTimeRemaining.setText(getString(R.string.time_remaining, timeRemaining));
+            tvTimeRemaining.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
         } else {
-            // Hay fichaje de entrada sin salida (fichado)
-            String estadoFichado = getString(R.string.estado_fichado, ultimoFichaje.horaEntrada);
-            tvEstadoFichaje.setText(estadoFichado);
-            btnFichar.setText(getString(R.string.fichar_salida));
+            tvTimeRemaining.setText(getString(R.string.overtime,
+                    WorkTimeCalculator.formatMinutes(Math.abs(minutesRemaining))));
+            tvTimeRemaining.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
         }
     }
 

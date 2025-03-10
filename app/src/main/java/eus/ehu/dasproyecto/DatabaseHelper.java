@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.icu.text.SimpleDateFormat;
 
 import java.util.*;
 
@@ -21,6 +22,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_HORA_SALIDA = "hora_salida";
     private static final String COLUMN_LATITUD = "latitud";
     private static final String COLUMN_LONGITUD = "longitud";
+    private static final String TABLE_SETTINGS = "settings";
+    private static final String COLUMN_WEEKLY_HOURS = "weekly_hours";
+    private static final String COLUMN_WORKING_DAYS = "working_days";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -28,14 +32,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String createTable = "CREATE TABLE " + TABLE_FICHAJES + " (" +
+        String createFichajesTable = "CREATE TABLE " + TABLE_FICHAJES + " (" +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COLUMN_FECHA + " TEXT, " +
                 COLUMN_HORA_ENTRADA + " TEXT, " +
                 COLUMN_HORA_SALIDA + " TEXT, " +
                 COLUMN_LATITUD + " REAL, " +
                 COLUMN_LONGITUD + " REAL)";
-        db.execSQL(createTable);
+        db.execSQL(createFichajesTable);
+
+        String createSettingsTable = "CREATE TABLE " + TABLE_SETTINGS + " (" +
+                COLUMN_ID + " INTEGER PRIMARY KEY, " +
+                COLUMN_WEEKLY_HOURS + " REAL, " +
+                COLUMN_WORKING_DAYS + " INTEGER)";
+        db.execSQL(createSettingsTable);
     }
 
     @Override
@@ -115,5 +125,66 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         db.update(TABLE_FICHAJES, values, COLUMN_ID + " = ?", new String[]{String.valueOf(fichaje.id)});
         db.close();
+    }
+
+    public List<Fichaje> obtenerFichajesDeHoy() {
+        List<Fichaje> listaFichajes = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        SimpleDateFormat sdfFecha = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String fechaActual = sdfFecha.format(new Date());
+
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_FICHAJES +
+                        " WHERE fecha = ? ORDER BY hora_entrada ASC",
+                new String[]{fechaActual});
+
+        if (cursor.moveToFirst()) {
+            do {
+                Fichaje fichaje = new Fichaje(
+                        cursor.getInt(0),
+                        cursor.getString(1),
+                        cursor.getString(2),
+                        cursor.getString(3),
+                        cursor.getDouble(4),
+                        cursor.getDouble(5)
+                );
+                listaFichajes.add(fichaje);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return listaFichajes;
+    }
+
+    public void saveSettings(float weeklyHours, int workingDays) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_WEEKLY_HOURS, weeklyHours);
+        values.put(COLUMN_WORKING_DAYS, workingDays);
+
+        db.insertWithOnConflict(TABLE_SETTINGS, null, values,
+                SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
+    }
+
+    public float[] getSettings() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        float[] settings = new float[2];
+
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_SETTINGS + " WHERE " +
+                COLUMN_ID + " = 1", null);
+
+        if (cursor.moveToFirst()) {
+            settings[0] = cursor.getFloat(cursor.getColumnIndex(COLUMN_WEEKLY_HOURS));
+            settings[1] = cursor.getFloat(cursor.getColumnIndex(COLUMN_WORKING_DAYS));
+        } else {
+            // Valores predefinidos
+            settings[0] = 40.0f;
+            settings[1] = 5.0f;
+        }
+
+        cursor.close();
+        db.close();
+        return settings;
     }
 }
