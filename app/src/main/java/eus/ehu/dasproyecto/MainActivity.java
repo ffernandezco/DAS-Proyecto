@@ -112,6 +112,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkLocationPermissionAndRegister() {
+        SimpleDateFormat sdfFecha = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String fechaActual = sdfFecha.format(new Date());
+        Fichaje ultimoFichaje = dbHelper.obtenerUltimoFichajeDelDia(fechaActual);
+
+        // Check if this is a clock-out action
+        if (ultimoFichaje != null && ultimoFichaje.horaSalida == null) {
+            // Calculate if the worker has completed their daily hours
+            List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy();
+            float[] settings = dbHelper.getSettings();
+            float weeklyHours = settings[0];
+            int workingDays = (int) settings[1];
+
+            float dailyHours = WorkTimeCalculator.calculateDailyHours(weeklyHours, workingDays);
+            long minutesWorked = WorkTimeCalculator.getMinutesWorkedToday(todaysFichajes);
+            long dailyMinutesRequired = (long)(dailyHours * 60);
+
+            // Show confirmation dialog only if they haven't completed their daily hours
+            if (minutesWorked < dailyMinutesRequired) {
+                showClockOutConfirmationDialog();
+                return;
+            }
+        }
+
+        // Either this is a clock-in action or worker has completed their daily hours
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
@@ -120,6 +144,23 @@ public class MainActivity extends AppCompatActivity {
         } else {
             getCurrentLocationAndRegister();
         }
+    }
+
+    //Dialog si se trata de salir antes de lo estipulado
+    private void showClockOutConfirmationDialog() {
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.confirm_clock_out_title))
+                .setMessage(getString(R.string.confirm_clock_out_message))
+                .setPositiveButton(getString(R.string.yes), (dialog, which) -> {
+                    // Si acepta, se procede a cerrar el fichaje
+                    getCurrentLocationAndRegister();
+                })
+                .setNegativeButton(getString(R.string.no), (dialog, which) -> {
+                    // Si cancela, se cierra el dialog
+                    dialog.dismiss();
+                })
+                .setCancelable(true)
+                .show();
     }
 
     @Override

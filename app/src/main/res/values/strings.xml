@@ -5,6 +5,10 @@
     <string name="estado_fichado">Has fichado hoy a las %1$s</string>
     <string name="fichar_entrada">Fichar entrada</string>
     <string name="fichar_salida">Finalizar turno</string>
+    <string name="confirm_clock_out_title">Confirmar salida</string>
+    <string name="confirm_clock_out_message">Aún no se han alcanzado las horas de trabajo previstas para hoy. ¿Seguro que quieres finalizar el turno?</string>
+    <string name="yes">Finalizar</string>
+    <string name="no">Cancelar</string>
     <string name="historial">Historial de fichajes:</string>
     <string name="fecha">Fecha: %1$s</string>
     <string name="entrada">Entrada: %1$s</string>

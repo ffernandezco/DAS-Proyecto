@@ -5,6 +5,10 @@
     <string name="estado_fichado">Clocked in since %1$s</string>
     <string name="fichar_entrada">Clock In</string>
     <string name="fichar_salida">Clock Out</string>
+    <string name="confirm_clock_out_title">Confirm Clock out</string>
+    <string name="confirm_clock_out_message">Working time not finished yet. Are you sure you want to clock out?</string>
+    <string name="yes">Clock out</string>
+    <string name="no">Cancel</string>
     <string name="historial">Punch-out history:</string>
     <string name="fecha">Date: %1$s</string>
     <string name="entrada">Check-in: %1$s</string>
