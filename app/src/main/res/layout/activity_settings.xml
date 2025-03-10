@@ -47,14 +47,89 @@
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="20dp" />
 
-    <EditText
-        android:id="@+id/etWeeklyHours"
-        android:layout_width="100dp"
+    <LinearLayout
+        android:id="@+id/hoursPickerContainer"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="numberDecimal"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         app:layout_constraintTop_toBottomOf="@id/tvWeeklyHoursTitle"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="8dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/btnIncreaseHours"
+                android:layout_width="50dp"
+                android:layout_height="40dp"
+                android:text="+"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/tvHoursValue"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:text="40"
+                android:textSize="20sp"
+                android:gravity="center" />
+
+            <Button
+                android:id="@+id/btnDecreaseHours"
+                android:layout_width="50dp"
+                android:layout_height="40dp"
+                android:text="-"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="h"
+            android:textSize="20sp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="16dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/btnIncreaseMinutes"
+                android:layout_width="50dp"
+                android:layout_height="40dp"
+                android:text="+"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/tvMinutesValue"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:text="00"
+                android:textSize="20sp"
+                android:gravity="center" />
+
+            <Button
+                android:id="@+id/btnDecreaseMinutes"
+                android:layout_width="50dp"
+                android:layout_height="40dp"
+                android:text="-"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="m"
+            android:textSize="20sp"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/tvWorkingDaysTitle"
@@ -62,25 +137,95 @@
         android:layout_height="wrap_content"
         android:text="@string/working_days"
         android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/etWeeklyHours"
+        app:layout_constraintTop_toBottomOf="@id/hoursPickerContainer"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="20dp" />
 
-    <EditText
-        android:id="@+id/etWorkingDays"
-        android:layout_width="100dp"
+    <HorizontalScrollView
+        android:id="@+id/daysSelectorScrollView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="number"
         app:layout_constraintTop_toBottomOf="@id/tvWorkingDaysTitle"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="8dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/daysContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ToggleButton
+                android:id="@+id/toggleMonday"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:textOn="L"
+                android:textOff="L"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/day_selector" />
+
+            <ToggleButton
+                android:id="@+id/toggleTuesday"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:textOn="M"
+                android:textOff="M"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/day_selector" />
+
+            <ToggleButton
+                android:id="@+id/toggleWednesday"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:textOn="X"
+                android:textOff="X"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/day_selector" />
+
+            <ToggleButton
+                android:id="@+id/toggleThursday"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:textOn="J"
+                android:textOff="J"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/day_selector" />
+
+            <ToggleButton
+                android:id="@+id/toggleFriday"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:textOn="V"
+                android:textOff="V"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/day_selector" />
+
+            <ToggleButton
+                android:id="@+id/toggleSaturday"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:textOn="S"
+                android:textOff="S"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/day_selector" />
+
+            <ToggleButton
+                android:id="@+id/toggleSunday"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:textOn="D"
+                android:textOff="D"
+                android:background="@drawable/day_selector" />
+        </LinearLayout>
+    </HorizontalScrollView>
 
     <Button
         android:id="@+id/btnSaveSettings"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/save"
-        app:layout_constraintTop_toBottomOf="@id/etWorkingDays"
+        app:layout_constraintTop_toBottomOf="@id/daysSelectorScrollView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="30dp"/>

@@ -27,6 +27,8 @@
     <string name="settings_updated">Configuración actualizada correctamente</string>
     <string name="save">Guardar</string>
     <string name="weekly_hours">Horas semanales</string>
+    <string name="select_weekly_hours">Elegir horas semanales</string>
+    <string name="edit_time">Editar tiempo</string>
     <string name="working_days">Días laborables por semana</string>
     <string name="settings_incomplete">Por favor complete todos los ajustes</string>
     <string name="invalid_settings">Valores de configuración no válidos</string>

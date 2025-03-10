@@ -116,9 +116,8 @@ public class MainActivity extends AppCompatActivity {
         String fechaActual = sdfFecha.format(new Date());
         Fichaje ultimoFichaje = dbHelper.obtenerUltimoFichajeDelDia(fechaActual);
 
-        // Check if this is a clock-out action
         if (ultimoFichaje != null && ultimoFichaje.horaSalida == null) {
-            // Calculate if the worker has completed their daily hours
+            // Comprobar si el usuario ha completado sus horas de trabajo
             List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy();
             float[] settings = dbHelper.getSettings();
             float weeklyHours = settings[0];
@@ -128,14 +127,14 @@ public class MainActivity extends AppCompatActivity {
             long minutesWorked = WorkTimeCalculator.getMinutesWorkedToday(todaysFichajes);
             long dailyMinutesRequired = (long)(dailyHours * 60);
 
-            // Show confirmation dialog only if they haven't completed their daily hours
+            // Mostrar dialog
             if (minutesWorked < dailyMinutesRequired) {
                 showClockOutConfirmationDialog();
                 return;
             }
         }
 
-        // Either this is a clock-in action or worker has completed their daily hours
+        // Si se han completado horas diarias o es una acción de fichar
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,

@@ -27,6 +27,8 @@
     <string name="settings_updated">Settings updated</string>
     <string name="save">Save</string>
     <string name="weekly_hours">Weekly working hours</string>
+    <string name="select_weekly_hours">Select weekly hours</string>
+    <string name="edit_time">Edit time</string>
     <string name="working_days">Working days per week</string>
     <string name="settings_incomplete">Please fill in all settings</string>
     <string name="invalid_settings">Invalid settings values</string>
