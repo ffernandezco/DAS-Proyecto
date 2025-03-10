@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TicTacker</string>
+    <string name="estado_no_fichado">Status: Not clocked in</string>
+    <string name="estado_fichado">Status: Clocked in since %1$s</string>
+    <string name="fichar_entrada">Clock In</string>
+    <string name="fichar_salida">Clock Out</string>
+    <string name="historial">Punch-out history:</string>
+    <string name="fecha">Date:</string>
+    <string name="entrada">Entry:</string>
+    <string name="salida">Exit:</string>
+    <string name="detalle">Details of the signing:</string>
+    <string name="ubicacion">Location:</string>
+    <string name="mapa">View on map</string>
+    <string name="cerrar">Close</string>
+    <string name="settings">Settings</string>
+    <string name="save">Save</string>
+</resources>

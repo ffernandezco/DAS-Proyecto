@@ -1,3 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">TicTacker</string>
+    <string name="estado_no_fichado">Estado: No fichado</string>
+    <string name="estado_fichado">Estado: Fichado desde %1$s</string>
+    <string name="fichar_entrada">Fichar Entrada</string>
+    <string name="fichar_salida">Fichar Salida</string>
+    <string name="historial">Historial de fichajes:</string>
+    <string name="fecha">Fecha:</string>
+    <string name="entrada">Entrada:</string>
+    <string name="salida">Salida:</string>
+    <string name="detalle">Detalles del fichaje:</string>
+    <string name="ubicacion">Ubicación:</string>
+    <string name="mapa">Ver en mapa</string>
+    <string name="cerrar">Cerrar</string>
+    <string name="settings">Ajustes</string>
+    <string name="save">Guardar</string>
 </resources>

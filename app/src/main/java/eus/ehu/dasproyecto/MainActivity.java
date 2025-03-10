@@ -1,7 +1,10 @@
 package eus.ehu.dasproyecto;
 
 import android.Manifest;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.location.Location;
 import android.os.Bundle;
 import android.widget.Button;
@@ -33,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        loadSavedLanguage(); //Carga el idioma lo primero
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -54,6 +58,13 @@ public class MainActivity extends AppCompatActivity {
         // Initial update of the UI and list
         actualizarEstadoUI();
         actualizarLista();
+
+        Button btnSettings = findViewById(R.id.btnSettings);
+        btnSettings.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
+        });
+
     }
 
     @Override
@@ -62,6 +73,16 @@ public class MainActivity extends AppCompatActivity {
         // Update UI state when returning to the activity
         actualizarEstadoUI();
         actualizarLista();
+    }
+
+    private void loadSavedLanguage() {
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        String lang = prefs.getString("language", "es");
+        Locale locale = new Locale(lang);
+        Locale.setDefault(locale);
+        Configuration config = new Configuration();
+        config.setLocale(locale);
+        getResources().updateConfiguration(config, getResources().getDisplayMetrics());
     }
 
     private void checkLocationPermissionAndRegister() {

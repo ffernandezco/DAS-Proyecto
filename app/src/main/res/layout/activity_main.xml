@@ -31,7 +31,7 @@
         android:layout_marginTop="60dp"
         android:background="@android:color/background_dark"
         android:paddingVertical="10dp"
-        android:text="Estado: No fichado"
+        android:text="@string/estado_no_fichado"
         android:textAlignment="center"
         android:textColor="@android:color/white"
         android:textSize="18sp"
@@ -47,7 +47,7 @@
         android:layout_marginTop="16dp"
         android:paddingHorizontal="24dp"
         android:paddingVertical="12dp"
-        android:text="Fichar Entrada"
+        android:text="@string/fichar_entrada"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvEstadoFichaje" />
@@ -57,7 +57,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="Historial de fichajes:"
+        android:text="@string/historial"
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -73,5 +73,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvHistorialLabel" />
+
+    <Button
+        android:id="@+id/btnSettings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/settings"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="16dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
