@@ -19,5 +19,7 @@
     <string name="location_error">No se ha podido obtener la ubicación. Se registrará el fichaje sin ella, pero conviene que revises los permisos otorgados en la configuración.</string>
     <string name="cerrar">Cerrar</string>
     <string name="settings">Ajustes</string>
+    <string name="language">Idioma de la aplicación</string>
+    <string name="settings_updated">Configuración actualizada correctamente</string>
     <string name="save">Guardar</string>
 </resources>

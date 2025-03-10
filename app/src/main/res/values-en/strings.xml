@@ -19,5 +19,7 @@
     <string name="mapa">View on map</string>
     <string name="location_error">The location could not be obtained. The check-in will be recorded without it, but you should review the granted permissions in the settings.</string>
     <string name="settings">Settings</string>
+    <string name="language">App language</string>
+    <string name="settings_updated">Settings updated</string>
     <string name="save">Save</string>
 </resources>
