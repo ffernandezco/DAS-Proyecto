@@ -1,6 +1,7 @@
 package eus.ehu.dasproyecto;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -35,34 +36,37 @@ public class FichajeDetailsDialog extends DialogFragment {
         Button btnVerMapa = view.findViewById(R.id.btnVerMapa);
         Button btnCerrar = view.findViewById(R.id.btnCerrar);
 
-        tvFecha.setText("Fecha: " + fichaje.fecha);
-        tvEntrada.setText("Hora entrada: " + fichaje.horaEntrada);
+        Context context = view.getContext();
 
-        String salida = fichaje.horaSalida != null ? fichaje.horaSalida : "Pendiente";
-        tvSalida.setText("Hora salida: " + salida);
+        tvFecha.setText(context.getString(R.string.fecha, fichaje.fecha));
+        tvEntrada.setText(context.getString(R.string.entrada, fichaje.horaEntrada));
+
+        String salida = fichaje.horaSalida != null ? fichaje.horaSalida : context.getString(R.string.pendiente);
+        tvSalida.setText(context.getString(R.string.salida, salida));
 
         if (fichaje.latitud == 0.0 && fichaje.longitud == 0.0) {
-            tvLocation.setText("Ubicación: No disponible");
+            tvLocation.setText(context.getString(R.string.ubicacion_no_disponible));
             btnVerMapa.setEnabled(false);
         } else {
-            tvLocation.setText(String.format("Ubicación: %.6f, %.6f",
-                    fichaje.latitud, fichaje.longitud));
+            tvLocation.setText(context.getString(R.string.ubicacion, fichaje.latitud, fichaje.longitud));
             btnVerMapa.setEnabled(true);
         }
 
         btnVerMapa.setOnClickListener(v -> {
             if (fichaje.latitud != 0.0 || fichaje.longitud != 0.0) {
                 String uri = "geo:" + fichaje.latitud + "," + fichaje.longitud + "?q=" +
-                        fichaje.latitud + "," + fichaje.longitud + "(Ubicación de fichaje)";
+                        fichaje.latitud + "," + fichaje.longitud + "(" + context.getString(R.string.ubicacion_fichaje) + ")";
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
                 startActivity(intent);
             }
         });
 
+        btnCerrar.setText(context.getString(R.string.cerrar));
         btnCerrar.setOnClickListener(v -> dismiss());
 
         return view;
     }
+
 
     @Override
     public void onStart() {

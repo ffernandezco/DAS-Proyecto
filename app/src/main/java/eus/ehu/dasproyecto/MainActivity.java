@@ -105,8 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 getCurrentLocationAndRegister();
             } else {
                 // Registro sin ubicación si no está disponible, se avisa con Toast
-                Toast.makeText(this, "No se ha podido obtener la ubicación. Se registrará el fichaje sin ella, pero conviene que revises los permisos otorgados en la configuración.",
-                        Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getString(R.string.location_error), Toast.LENGTH_LONG).show();
                 registrarFichaje(0.0, 0.0);
             }
         }
@@ -170,12 +169,13 @@ public class MainActivity extends AppCompatActivity {
 
         if (ultimoFichaje == null || ultimoFichaje.horaSalida != null) {
             // No hay fichaje o el último fichaje ya tiene hora de salida (no fichado)
-            tvEstadoFichaje.setText("Estado: No fichado");
-            btnFichar.setText("Fichar Entrada");
+            tvEstadoFichaje.setText(getString(R.string.estado_no_fichado));
+            btnFichar.setText(getString(R.string.fichar_entrada));
         } else {
             // Hay fichaje de entrada sin salida (fichado)
-            tvEstadoFichaje.setText("Estado: Fichado desde " + ultimoFichaje.horaEntrada);
-            btnFichar.setText("Fichar Salida");
+            String estadoFichado = getString(R.string.estado_fichado, ultimoFichaje.horaEntrada);
+            tvEstadoFichaje.setText(estadoFichado);
+            btnFichar.setText(getString(R.string.fichar_salida));
         }
     }
 

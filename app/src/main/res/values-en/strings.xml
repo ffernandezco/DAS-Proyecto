@@ -6,13 +6,18 @@
     <string name="fichar_entrada">Clock In</string>
     <string name="fichar_salida">Clock Out</string>
     <string name="historial">Punch-out history:</string>
-    <string name="fecha">Date:</string>
-    <string name="entrada">Entry:</string>
-    <string name="salida">Exit:</string>
-    <string name="detalle">Details of the signing:</string>
-    <string name="ubicacion">Location:</string>
-    <string name="mapa">View on map</string>
+    <string name="fecha">Date: %1$s</string>
+    <string name="entrada">Check-in: %1$s</string>
+    <string name="salida">Check-out: %1$s</string>
+    <string name="pendiente">Pending</string>
+    <string name="ubicacion_no_disponible">Location: Not available</string>
+    <string name="ubicacion">Location: %1$.6f, %2$.6f</string>
+    <string name="ver_mapa">View map</string>
     <string name="cerrar">Close</string>
+    <string name="ubicacion_fichaje">Clock-in location</string>
+    <string name="detalle">Clock-in details</string>
+    <string name="mapa">View on map</string>
+    <string name="location_error">The location could not be obtained. The check-in will be recorded without it, but you should review the granted permissions in the settings.</string>
     <string name="settings">Settings</string>
     <string name="save">Save</string>
 </resources>
