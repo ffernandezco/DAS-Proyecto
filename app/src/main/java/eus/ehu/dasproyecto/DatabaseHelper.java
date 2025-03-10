@@ -51,6 +51,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_FICHAJES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SETTINGS);
         onCreate(db);
     }
 
@@ -159,11 +160,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void saveSettings(float weeklyHours, int workingDays) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
+        values.put(COLUMN_ID, 1); // 1 explícitamente
         values.put(COLUMN_WEEKLY_HOURS, weeklyHours);
         values.put(COLUMN_WORKING_DAYS, workingDays);
 
-        db.insertWithOnConflict(TABLE_SETTINGS, null, values,
-                SQLiteDatabase.CONFLICT_REPLACE);
+        // Comprobar si se han guardado ajustes de forma previa
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_SETTINGS + " LIMIT 1", null);
+        boolean hasSettings = cursor.moveToFirst();
+        cursor.close();
+
+        if (hasSettings) {
+            // Actualizar valores
+            db.update(TABLE_SETTINGS, values, COLUMN_ID + " = ?", new String[]{"1"});
+        } else {
+            // Guardar tablas si no hay valores
+            db.insert(TABLE_SETTINGS, null, values);
+        }
+
         db.close();
     }
 
@@ -171,16 +184,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         float[] settings = new float[2];
 
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_SETTINGS + " WHERE " +
-                COLUMN_ID + " = 1", null);
+        // Valores por defecto (horas semanales 0 y días a la semana 1)
+        settings[0] = 40.0f;
+        settings[1] = 5.0f;
+
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_SETTINGS + " LIMIT 1", null);
 
         if (cursor.moveToFirst()) {
-            settings[0] = cursor.getFloat(cursor.getColumnIndex(COLUMN_WEEKLY_HOURS));
-            settings[1] = cursor.getFloat(cursor.getColumnIndex(COLUMN_WORKING_DAYS));
-        } else {
-            // Valores predefinidos
-            settings[0] = 40.0f;
-            settings[1] = 5.0f;
+            int weeklyHoursIndex = cursor.getColumnIndex(COLUMN_WEEKLY_HOURS);
+            int workingDaysIndex = cursor.getColumnIndex(COLUMN_WORKING_DAYS);
+
+            if (weeklyHoursIndex != -1 && workingDaysIndex != -1) {
+                settings[0] = cursor.getFloat(weeklyHoursIndex);
+                settings[1] = cursor.getFloat(workingDaysIndex);
+            }
         }
 
         cursor.close();
