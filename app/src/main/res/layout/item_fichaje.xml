@@ -15,19 +15,19 @@
             android:id="@+id/tvFecha"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Fecha"
+            android:text="@string/fecha"
             android:textStyle="bold"/>
 
         <TextView
             android:id="@+id/tvHoraEntrada"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Hora de entrada"/>
+            android:text="@string/entrada"/>
 
         <TextView
             android:id="@+id/tvHoraSalida"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Hora de salida"/>
+            android:text="@string/salida"/>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

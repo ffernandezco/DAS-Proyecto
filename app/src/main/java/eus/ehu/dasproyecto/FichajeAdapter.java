@@ -1,5 +1,6 @@
 package eus.ehu.dasproyecto;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,12 +40,13 @@ public class FichajeAdapter extends RecyclerView.Adapter<FichajeAdapter.FichajeV
     @Override
     public void onBindViewHolder(@NonNull FichajeViewHolder holder, int position) {
         Fichaje fichaje = fichajes.get(position);
-        holder.tvFecha.setText("Fecha: " + fichaje.fecha);
-        holder.tvHoraEntrada.setText("Entrada: " + fichaje.horaEntrada);
+        Context context = holder.itemView.getContext();
 
-        // Hay que gestionar hora de salida vacía para fichajes en curso
-        String horaSalida = fichaje.horaSalida != null ? fichaje.horaSalida : "Pendiente";
-        holder.tvHoraSalida.setText("Salida: " + horaSalida);
+        holder.tvFecha.setText(context.getString(R.string.fecha, fichaje.fecha));
+        holder.tvHoraEntrada.setText(context.getString(R.string.entrada, fichaje.horaEntrada));
+
+        String horaSalida = fichaje.horaSalida != null ? fichaje.horaSalida : context.getString(R.string.pendiente);
+        holder.tvHoraSalida.setText(context.getString(R.string.salida, horaSalida));
 
         // Listener
         holder.itemView.setOnClickListener(v -> {

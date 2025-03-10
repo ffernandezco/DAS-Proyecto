@@ -17,7 +17,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Detalles del Fichaje"
+            android:text="@string/detalle"
             android:textSize="18sp"
             android:textStyle="bold"
             android:gravity="center"
@@ -27,7 +27,7 @@
             android:id="@+id/tvDetailFecha"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fecha: "
+            android:text="@string/fecha"
             android:textSize="16sp"
             android:layout_marginBottom="8dp"/>
 
@@ -35,7 +35,7 @@
             android:id="@+id/tvDetailEntrada"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Hora entrada: "
+            android:text="@string/entrada"
             android:textSize="16sp"
             android:layout_marginBottom="8dp"/>
 
@@ -43,7 +43,7 @@
             android:id="@+id/tvDetailSalida"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Hora salida: "
+            android:text="@string/salida"
             android:textSize="16sp"
             android:layout_marginBottom="8dp"/>
 
@@ -51,7 +51,7 @@
             android:id="@+id/tvDetailLocation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Ubicación: "
+            android:text="@string/ubicacion"
             android:textSize="16sp"
             android:layout_marginBottom="16dp"/>
 
@@ -65,14 +65,14 @@
                 android:id="@+id/btnVerMapa"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ver en mapa"
+                android:text="@string/mapa"
                 android:layout_marginEnd="8dp"/>
 
             <Button
                 android:id="@+id/btnCerrar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Cerrar"/>
+                android:text="@string/cerrar"/>
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
