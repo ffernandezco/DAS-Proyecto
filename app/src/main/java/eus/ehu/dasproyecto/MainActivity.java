@@ -211,7 +211,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Textos a mostrar
         if (isClockedIn) {
-            tvEstadoFichaje.setText(getString(R.string.estado_fichado));
+            String horaFichaje = WorkTimeCalculator.getLastClockInTime(todaysFichajes);
+            tvEstadoFichaje.setText(getString(R.string.estado_fichado, horaFichaje));
             btnFichar.setText(getString(R.string.fichar_salida));
         } else {
             tvEstadoFichaje.setText(getString(R.string.estado_no_fichado));

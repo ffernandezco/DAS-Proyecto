@@ -70,6 +70,15 @@ public class WorkTimeCalculator {
         return Math.max(0, remaining); // Control de negativos
     }
 
+    public static String getLastClockInTime(List<Fichaje> fichajes) {
+        for (int i = fichajes.size() - 1; i >= 0; i--) {
+            if (fichajes.get(i).horaSalida == null) {
+                return fichajes.get(i).horaEntrada;
+            }
+        }
+        return "N/A"; // Si no hay fichaje activo
+    }
+
     // Auxiliar para fichaje activo
     public static Fichaje getActiveFichaje(List<Fichaje> todaysFichajes) {
         for (Fichaje fichaje : todaysFichajes) {
