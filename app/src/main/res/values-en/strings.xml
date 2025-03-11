@@ -35,4 +35,7 @@
     <string name="time_worked">Time worked today: %1$s</string>
     <string name="time_remaining">Time remaining: %1$s</string>
     <string name="overtime">Overtime: %1$s</string>
+    <string name="notification_title">Workday completed</string>
+    <string name="notification_message">You have completed your working day today.</string>
+    <string name="notification_permission_denied">You must allow notifications to receive alerts at the end of the working day. Check your device settings.</string>
 </resources>

@@ -35,4 +35,7 @@
     <string name="time_worked">Tiempo trabajado hoy: %1$s</string>
     <string name="time_remaining">Tiempo restante: %1$s</string>
     <string name="overtime">Horas extra: %1$s</string>
+    <string name="notification_title">Jornada completa</string>
+    <string name="notification_message">Has completado tu jornada laboral de hoy.</string>
+    <string name="notification_permission_denied">Debes permitir las notificaciones para recibir avisos al finalizar la jornada laboral. Revisa la configuración de tu dispositivo.</string>
 </resources>

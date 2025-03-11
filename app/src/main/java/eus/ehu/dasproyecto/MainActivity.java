@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.Button;
@@ -36,9 +37,11 @@ public class MainActivity extends AppCompatActivity {
 
     private Handler timerHandler = new Handler();
     private Runnable timerRunnable;
-
+    private NotificationHelper notificationHelper;
+    private boolean notificationSent = false;
     private FusedLocationProviderClient fusedLocationClient;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
+    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1002;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,12 +57,20 @@ public class MainActivity extends AppCompatActivity {
         tvTimeRemaining = findViewById(R.id.tvTimeRemaining);
         btnFichar = findViewById(R.id.btnFichar);
 
+        notificationHelper = new NotificationHelper(this);
+        checkAndResetNotificationFlag();
+
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new FichajeAdapter(fichaje -> showFichajeDetails(fichaje));
         recyclerView.setAdapter(adapter);
 
         btnFichar.setOnClickListener(v -> checkLocationPermissionAndRegister());
+
+        // Solicitar permiso para enviar notificaciones
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Solo necesario en las versiones modernas de Android
+            requestNotificationPermission();
+        }
 
         actualizarEstadoUI();
         actualizarLista();
@@ -68,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 actualizarEstadoUI();
+                checkWorkTimeCompleted(); // Para notificaciones
                 timerHandler.postDelayed(this, 1000); // Actualiza el estado cada segundo para mostrar tiempo trabajado
             }
         };
@@ -163,13 +175,14 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+        } else if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getCurrentLocationAndRegister();
             } else {
-                // Registro sin ubicación si no está disponible, se avisa con Toast
-                Toast.makeText(this, getString(R.string.location_error), Toast.LENGTH_LONG).show(); //Faltaría recortar texto
-                registrarFichaje(0.0, 0.0);
+                // Se muestra un toast en caso de que no se otorgue permiso para mostrar notificaciones
+                Toast.makeText(this, getString(R.string.notification_permission_denied),
+                        Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -267,6 +280,63 @@ public class MainActivity extends AppCompatActivity {
         } else {
             tvTimeRemaining.setText(getString(R.string.overtime, timeRemainingStr));
             tvTimeRemaining.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+        }
+    }
+
+    private void checkAndResetNotificationFlag() {
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        String lastNotificationDate = prefs.getString("last_notification_date", "");
+
+        SimpleDateFormat sdfFecha = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String fechaActual = sdfFecha.format(new Date());
+
+        if (!fechaActual.equals(lastNotificationDate)) {
+            // Resetear si se pasa al día siguiente
+            notificationSent = false;
+        }
+    }
+
+    private void checkWorkTimeCompleted() {
+        if (notificationSent) {
+            return; // No enviar más de una notificación. Necesario para evitar bucles
+        }
+
+        List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy();
+        float[] settings = dbHelper.getSettings();
+        float weeklyHours = settings[0];
+        int workingDays = (int) settings[1];
+
+        float dailyHours = WorkTimeCalculator.calculateDailyHours(weeklyHours, workingDays);
+        long[] timeWorked = WorkTimeCalculator.getTimeWorkedToday(todaysFichajes);
+        long[] timeRemaining = WorkTimeCalculator.getRemainingTime(timeWorked, dailyHours);
+
+        // Si se llega a horas extra o las horas restantes son exactamente 0
+        if (timeRemaining[2] == 1 || (timeRemaining[0] == 0 && timeRemaining[1] == 0)) {
+            // Se alcanza el periodo de horas extra
+            notificationHelper.sendWorkCompleteNotification();
+
+            // Enviar y guardar notificación
+            notificationSent = true;
+            SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+
+            SimpleDateFormat sdfFecha = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            String fechaActual = sdfFecha.format(new Date());
+
+            editor.putString("last_notification_date", fechaActual);
+            editor.apply();
+        }
+    }
+
+    // Permisos para notificaciones
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Solo en versiones modernas
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        NOTIFICATION_PERMISSION_REQUEST_CODE);
+            }
         }
     }
 
