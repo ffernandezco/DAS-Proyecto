@@ -30,8 +30,8 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseHelper dbHelper;
     private FichajeAdapter adapter;
     private TextView tvEstadoFichaje;
-    private TextView tvTimeWorked;     // New TextView for time worked
-    private TextView tvTimeRemaining;  // New TextView for time remaining
+    private TextView tvTimeWorked;
+    private TextView tvTimeRemaining;
     private Button btnFichar;
 
     private Handler timerHandler = new Handler();
@@ -49,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
         dbHelper = new DatabaseHelper(this);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // Initialize UI components
         tvEstadoFichaje = findViewById(R.id.tvEstadoFichaje);
         tvTimeWorked = findViewById(R.id.tvTimeWorked);
         tvTimeRemaining = findViewById(R.id.tvTimeRemaining);
@@ -60,19 +59,16 @@ public class MainActivity extends AppCompatActivity {
         adapter = new FichajeAdapter(fichaje -> showFichajeDetails(fichaje));
         recyclerView.setAdapter(adapter);
 
-        // Set the click listener for the button
         btnFichar.setOnClickListener(v -> checkLocationPermissionAndRegister());
 
-        // Initial update of the UI and list
         actualizarEstadoUI();
         actualizarLista();
 
-        // Setup timer to update the timer display every minute
         timerRunnable = new Runnable() {
             @Override
             public void run() {
                 actualizarEstadoUI();
-                timerHandler.postDelayed(this, 60000); // Update every minute
+                timerHandler.postDelayed(this, 1000); // Actualiza el estado cada segundo para mostrar tiempo trabajado
             }
         };
 
@@ -86,18 +82,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Update UI state when returning to the activity
+        // Calcular tiempo si se sale de la app
         actualizarEstadoUI();
         actualizarLista();
 
-        // Start the timer updates
-        timerHandler.postDelayed(timerRunnable, 1000);
+        timerHandler.postDelayed(timerRunnable, 1000); //Seguir actualizando cada minuto
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        // Stop timer updates when app is in background
+        // Como tenemos la hora exacta de fichaje, no es necesario consumir recursos
+        // Se detiene el contador si se pausa la app y vuelve a comenzar a partir de la hora dada
+        // en caso de que se vuelva a abrir usando onResume()
         timerHandler.removeCallbacks(timerRunnable);
     }
 
@@ -117,18 +114,18 @@ public class MainActivity extends AppCompatActivity {
         Fichaje ultimoFichaje = dbHelper.obtenerUltimoFichajeDelDia(fechaActual);
 
         if (ultimoFichaje != null && ultimoFichaje.horaSalida == null) {
-            // Comprobar si el usuario ha completado sus horas de trabajo
+            // Comprobar si el trabajador ha completado sus horas de trabajo
             List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy();
             float[] settings = dbHelper.getSettings();
             float weeklyHours = settings[0];
             int workingDays = (int) settings[1];
 
             float dailyHours = WorkTimeCalculator.calculateDailyHours(weeklyHours, workingDays);
-            long minutesWorked = WorkTimeCalculator.getMinutesWorkedToday(todaysFichajes);
+            long[] timeWorked = WorkTimeCalculator.getTimeWorkedToday(todaysFichajes);
             long dailyMinutesRequired = (long)(dailyHours * 60);
 
-            // Mostrar dialog
-            if (minutesWorked < dailyMinutesRequired) {
+            // Mostrar dialog en caso de que haya trabajado menos de lo previsto
+            if (timeWorked[0] < dailyMinutesRequired) {
                 showClockOutConfirmationDialog();
                 return;
             }
@@ -171,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
                 getCurrentLocationAndRegister();
             } else {
                 // Registro sin ubicación si no está disponible, se avisa con Toast
-                Toast.makeText(this, getString(R.string.location_error), Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getString(R.string.location_error), Toast.LENGTH_LONG).show(); //Faltaría recortar texto
                 registrarFichaje(0.0, 0.0);
             }
         }
@@ -239,12 +236,13 @@ public class MainActivity extends AppCompatActivity {
 
         float dailyHours = WorkTimeCalculator.calculateDailyHours(weeklyHours, workingDays);
 
-        long minutesWorked = WorkTimeCalculator.getMinutesWorkedToday(todaysFichajes);
+        // Calcular horas restantes y trabajadas en segundos
+        long[] timeWorked = WorkTimeCalculator.getTimeWorkedToday(todaysFichajes);
+        long[] timeRemaining = WorkTimeCalculator.getRemainingTime(timeWorked, dailyHours);
 
-        long minutesRemaining = WorkTimeCalculator.getRemainingMinutes(minutesWorked, dailyHours);
-
-        String timeWorked = WorkTimeCalculator.formatMinutes(minutesWorked);
-        String timeRemaining = WorkTimeCalculator.formatMinutes(minutesRemaining);
+        // Formatear tiempo
+        String timeWorkedStr = WorkTimeCalculator.formatTime(timeWorked[0], timeWorked[1]);
+        String timeRemainingStr = WorkTimeCalculator.formatTime(timeRemaining[0], timeRemaining[1]);
 
         // Actualizar UI
         boolean isClockedIn = WorkTimeCalculator.isCurrentlyClockedIn(todaysFichajes);
@@ -259,14 +257,15 @@ public class MainActivity extends AppCompatActivity {
             btnFichar.setText(getString(R.string.fichar_entrada));
         }
 
-        tvTimeWorked.setText(getString(R.string.time_worked, timeWorked));
+        tvTimeWorked.setText(getString(R.string.time_worked, timeWorkedStr));
 
-        if (minutesRemaining > 0) {
-            tvTimeRemaining.setText(getString(R.string.time_remaining, timeRemaining));
+        // Comprobación horas trabajadas superiores a las de la jornada
+        // (timeRemaining[2] == 1 implica que ya estamos en horas extra, se cambia a texto rojo)
+        if (timeRemaining[2] == 0) {
+            tvTimeRemaining.setText(getString(R.string.time_remaining, timeRemainingStr));
             tvTimeRemaining.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
         } else {
-            tvTimeRemaining.setText(getString(R.string.overtime,
-                    WorkTimeCalculator.formatMinutes(Math.abs(minutesRemaining))));
+            tvTimeRemaining.setText(getString(R.string.overtime, timeRemainingStr));
             tvTimeRemaining.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
         }
     }

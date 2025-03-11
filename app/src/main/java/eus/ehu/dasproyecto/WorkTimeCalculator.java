@@ -10,9 +10,9 @@ import java.util.concurrent.TimeUnit;
 
 public class WorkTimeCalculator {
 
-    // Calcula los minutos fichados en la fecha actual
-    public static long getMinutesWorkedToday(List<Fichaje> todaysFichajes) {
-        long totalMinutes = 0;
+    // Calcula los minutos y segundos fichados en la fecha actual
+    public static long[] getTimeWorkedToday(List<Fichaje> todaysFichajes) {
+        long totalSeconds = 0;
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
 
         for (Fichaje fichaje : todaysFichajes) {
@@ -22,9 +22,9 @@ public class WorkTimeCalculator {
                     Date salida = sdf.parse(fichaje.horaSalida);
 
                     long diffInMillis = salida.getTime() - entrada.getTime();
-                    long diffInMinutes = TimeUnit.MILLISECONDS.toMinutes(diffInMillis);
+                    long diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(diffInMillis);
 
-                    totalMinutes += diffInMinutes;
+                    totalSeconds += diffInSeconds;
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -36,21 +36,37 @@ public class WorkTimeCalculator {
         if (activeFichaje != null) {
             try {
                 Date entrada = sdf.parse(activeFichaje.horaEntrada);
-                Date now = sdf.parse(sdf.format(new Date())); // Current time
+                Date now = sdf.parse(sdf.format(new Date())); // Coge la hora actual
 
                 long diffInMillis = now.getTime() - entrada.getTime();
-                long diffInMinutes = TimeUnit.MILLISECONDS.toMinutes(diffInMillis);
+                long diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(diffInMillis);
 
-                totalMinutes += diffInMinutes;
+                totalSeconds += diffInSeconds;
             } catch (ParseException e) {
                 e.printStackTrace();
             }
         }
 
-        return totalMinutes;
+        // Devuelve el tiempo en formato minutos / segundos
+        long minutes = totalSeconds / 60;
+        long seconds = totalSeconds % 60;
+        return new long[]{minutes, seconds};
     }
 
-    // Adaptar a hh:mm para visualizar por pantalla
+    // Devolver solo los minutos trabajados. Lo usan otros métodos internos
+    public static long getMinutesWorkedToday(List<Fichaje> todaysFichajes) {
+        long[] time = getTimeWorkedToday(todaysFichajes);
+        return time[0];
+    }
+
+    // Adaptar a hh:mm:ss para visualizar por pantalla
+    public static String formatTime(long minutes, long seconds) {
+        long hours = minutes / 60;
+        long mins = minutes % 60;
+        return String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, mins, seconds);
+    }
+
+    // Lo mismo pero en minutos para métodos internos
     public static String formatMinutes(long minutes) {
         long hours = minutes / 60;
         long mins = minutes % 60;
@@ -63,11 +79,18 @@ public class WorkTimeCalculator {
         return weeklyHours / workingDays;
     }
 
-    // Cálculo de los minutos restantes
-    public static long getRemainingMinutes(long minutesWorked, float dailyHours) {
-        long dailyMinutes = (long)(dailyHours * 60);
-        long remaining = dailyMinutes - minutesWorked;
-        return Math.max(0, remaining); // Control de negativos
+    // Cálculo de los segundos restantes
+    public static long[] getRemainingTime(long[] timeWorked, float dailyHours) {
+        long dailySeconds = (long)(dailyHours * 60 * 60);
+        long workedSeconds = timeWorked[0] * 60 + timeWorked[1];
+        long remainingSeconds = dailySeconds - workedSeconds;
+
+        // Calculo de minutos y segundos
+        long minutes = Math.abs(remainingSeconds) / 60;
+        long seconds = Math.abs(remainingSeconds) % 60;
+
+        // Devuelve minutos, segundos y si se está en horas extra
+        return new long[]{minutes, seconds, remainingSeconds < 0 ? 1 : 0};
     }
 
     public static String getLastClockInTime(List<Fichaje> fichajes) {
