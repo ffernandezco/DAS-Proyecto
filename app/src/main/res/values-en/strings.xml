@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">TicTacker</string>
-    <string name="estado_no_fichado">Status: Not clocked in</string>
-    <string name="estado_fichado">Status: Clocked in since %1$s</string>
+    <string name="estado_no_fichado">Not clocked in</string>
+    <string name="estado_fichado">Clocked in since %1$s</string>
     <string name="fichar_entrada">Clock In</string>
     <string name="fichar_salida">Clock Out</string>
+    <string name="confirm_clock_out_title">Confirm Clock out</string>
+    <string name="confirm_clock_out_message">Working time not finished yet. Are you sure you want to clock out?</string>
+    <string name="yes">Clock out</string>
+    <string name="no">Cancel</string>
     <string name="historial">Punch-out history:</string>
     <string name="fecha">Date: %1$s</string>
     <string name="entrada">Check-in: %1$s</string>
@@ -22,4 +26,13 @@
     <string name="language">App language</string>
     <string name="settings_updated">Settings updated</string>
     <string name="save">Save</string>
+    <string name="weekly_hours">Weekly working hours</string>
+    <string name="select_weekly_hours">Select weekly hours</string>
+    <string name="edit_time">Edit time</string>
+    <string name="working_days">Working days per week</string>
+    <string name="settings_incomplete">Please fill in all settings</string>
+    <string name="invalid_settings">Invalid settings values</string>
+    <string name="time_worked">Time worked today: %1$s</string>
+    <string name="time_remaining">Time remaining: %1$s</string>
+    <string name="overtime">Overtime: %1$s</string>
 </resources>
