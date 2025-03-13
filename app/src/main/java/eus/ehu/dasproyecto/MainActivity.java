@@ -19,6 +19,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -26,6 +29,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     private DatabaseHelper dbHelper;
@@ -79,10 +83,22 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 actualizarEstadoUI();
-                checkWorkTimeCompleted(); // Para notificaciones
-                timerHandler.postDelayed(this, 1000); // Actualiza el estado cada segundo para mostrar tiempo trabajado
+                checkWorkTimeCompleted(); // Comprobar el tiempo
+                timerHandler.postDelayed(this, 1000); // Actualiza el estado cada segundo
             }
         };
+
+        PeriodicWorkRequest workTimeCheckRequest =
+                new PeriodicWorkRequest.Builder(WorkTimeCheckWorker.class,
+                        1, TimeUnit.SECONDS)  // Comprobar cada segundo para notificaciones
+                        .build();
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "periodicWorkTimeCheck",
+                ExistingPeriodicWorkPolicy.REPLACE,
+                workTimeCheckRequest);
+
+
 
         Button btnSettings = findViewById(R.id.btnSettings);
         btnSettings.setOnClickListener(v -> {
@@ -297,8 +313,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkWorkTimeCompleted() {
-        if (notificationSent) {
-            return; // No enviar más de una notificación. Necesario para evitar bucles
+        if (!notificationHelper.shouldSendNotification(this)) {
+            return; // No repetir notificaciones
         }
 
         List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy();
@@ -310,21 +326,12 @@ public class MainActivity extends AppCompatActivity {
         long[] timeWorked = WorkTimeCalculator.getTimeWorkedToday(todaysFichajes);
         long[] timeRemaining = WorkTimeCalculator.getRemainingTime(timeWorked, dailyHours);
 
-        // Si se llega a horas extra o las horas restantes son exactamente 0
-        if (timeRemaining[2] == 1 || (timeRemaining[0] == 0 && timeRemaining[1] == 0)) {
-            // Se alcanza el periodo de horas extra
+        boolean isClockedIn = WorkTimeCalculator.isCurrentlyClockedIn(todaysFichajes);
+
+        // Enviar notificación si hay fichaje en curso y supera las horas
+        if ((timeRemaining[2] == 1 || (timeRemaining[0] == 0 && timeRemaining[1] == 0)) && isClockedIn) {
             notificationHelper.sendWorkCompleteNotification();
-
-            // Enviar y guardar notificación
-            notificationSent = true;
-            SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-            SharedPreferences.Editor editor = prefs.edit();
-
-            SimpleDateFormat sdfFecha = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            String fechaActual = sdfFecha.format(new Date());
-
-            editor.putString("last_notification_date", fechaActual);
-            editor.apply();
+            notificationHelper.recordNotificationSent(this);
         }
     }
 
