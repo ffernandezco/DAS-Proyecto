@@ -204,4 +204,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return settings;
     }
+
+    public void deleteAllFichajes() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_FICHAJES, null, null);
+        db.close();
+    }
 }

@@ -38,4 +38,9 @@
     <string name="notification_title">Workday completed</string>
     <string name="notification_message">You have completed your working day today.</string>
     <string name="notification_permission_denied">You must allow notifications to receive alerts at the end of the working day. Check your device settings.</string>
+    <string name="delete_history">Delete Clock In History</string>
+    <string name="confirm_delete_title">Delete History</string>
+    <string name="confirm_delete_message">Are you sure you want to delete all clock in/out records? This action cannot be undone.</string>
+    <string name="history_deleted">History deleted successfully</string>
+    <string name="confirming">Delete</string>
 </resources>

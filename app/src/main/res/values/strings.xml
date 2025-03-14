@@ -38,4 +38,9 @@
     <string name="notification_title">Jornada completa</string>
     <string name="notification_message">Has completado tu jornada laboral de hoy.</string>
     <string name="notification_permission_denied">Debes permitir las notificaciones para recibir avisos al finalizar la jornada laboral. Revisa la configuración de tu dispositivo.</string>
+    <string name="delete_history">Eliminar historial de fichajes</string>
+    <string name="confirm_delete_title">Eliminar historial</string>
+    <string name="confirm_delete_message">¿Estás seguro de que quieres eliminar todos los registros de fichaje? Esta acción no se puede deshacer.</string>
+    <string name="history_deleted">Historial eliminado correctamente</string>
+    <string name="confirming">Eliminar</string>
 </resources>

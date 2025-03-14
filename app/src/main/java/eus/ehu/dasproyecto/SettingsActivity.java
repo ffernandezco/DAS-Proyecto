@@ -24,6 +24,7 @@ public class SettingsActivity extends AppCompatActivity {
     private Button btnIncreaseHours, btnDecreaseHours;
     private Button btnIncreaseMinutes, btnDecreaseMinutes;
     private Button btnSave;
+    private Button btnDeleteHistory;
     private DatabaseHelper dbHelper;
 
     // Day selectors
@@ -59,6 +60,13 @@ public class SettingsActivity extends AppCompatActivity {
         btnDecreaseHours = findViewById(R.id.btnDecreaseHours);
         btnIncreaseMinutes = findViewById(R.id.btnIncreaseMinutes);
         btnDecreaseMinutes = findViewById(R.id.btnDecreaseMinutes);
+
+        btnDeleteHistory = findViewById(R.id.btnDeleteHistory);
+
+        // Set up delete history button
+        btnDeleteHistory.setOnClickListener(v -> {
+            showDeleteConfirmationDialog();
+        });
 
         btnSave = findViewById(R.id.btnSaveSettings);
 
@@ -255,5 +263,22 @@ public class SettingsActivity extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         Toast.makeText(this, getString(R.string.settings_updated), Toast.LENGTH_LONG).show();
+    }
+
+    private void showDeleteConfirmationDialog() {
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.confirm_delete_title))
+                .setMessage(getString(R.string.confirm_delete_message))
+                .setPositiveButton(getString(R.string.confirming), (dialog, which) -> {
+                    // Elimina todos los fichakes
+                    dbHelper.deleteAllFichajes();
+                    Toast.makeText(this, getString(R.string.history_deleted), Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton(getString(R.string.no), (dialog, which) -> {
+                    // Cancelar si el usuario no acepta
+                    dialog.dismiss();
+                })
+                .setCancelable(true)
+                .show();
     }
 }
