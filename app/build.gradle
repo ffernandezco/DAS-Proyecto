@@ -43,6 +43,7 @@ dependencies {
     implementation libs.cardview
     implementation libs.room.runtime
     implementation libs.androidx.room.common
+    implementation libs.androidx.work.runtime
     annotationProcessor libs.androidx.room.compiler
     implementation libs.androidx.lifecycle.viewmodel.ktx
     implementation libs.lifecycle.livedata.ktx
