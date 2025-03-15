@@ -1,33 +1,71 @@
 package eus.ehu.dasproyecto;
 
+import android.Manifest;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
     private AppBarConfiguration appBarConfiguration;
     private NavController navController;
+    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1002;
+    private static final String WORK_TAG = "work_time_checker";
+
+    private ActivityResultLauncher<String> requestPermissionLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         applyLanguageFromPreferences();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Setup permission request launcher
+        requestPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        // Permission is granted
+                        scheduleWorkTimeCheck();
+                    } else {
+                        // Permission is denied
+                        // You might want to show a message to the user
+                    }
+                }
+        );
+
+        // Check and request notification permission
+        checkNotificationPermission();
+
+        // Create notification channel
+        new NotificationHelper(this);
 
         // Configura Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -52,11 +90,13 @@ public class MainActivity extends AppCompatActivity {
                     .setOpenableLayout(drawerLayout)
                     .build();
 
-            // Vincula la Toolbar  el NavigationView asociado con NavController
+            // Vincula la Toolbar y el NavigationView asociado con NavController
             NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
             NavigationUI.setupWithNavController(navigationView, navController);
         }
     }
+
+
 
     @Override
     public boolean onSupportNavigateUp() {
@@ -81,5 +121,28 @@ public class MainActivity extends AppCompatActivity {
         Configuration config = getResources().getConfiguration();
         config.setLocale(locale);
         getResources().updateConfiguration(config, getResources().getDisplayMetrics());
+    }
+
+    private void checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+                    PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            } else {
+                scheduleWorkTimeCheck();
+            }
+        } else {
+            scheduleWorkTimeCheck(); // Si la versión de Android es antigua
+        }
+    }
+
+
+    private void scheduleWorkTimeCheck() {
+        PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(
+                WorkTimeCheckWorker.class,
+                5, TimeUnit.MINUTES) //Comprueba notificaciones cada 5 minutos
+                .build();
+
+        WorkManager.getInstance(this).enqueue(workRequest);
     }
 }

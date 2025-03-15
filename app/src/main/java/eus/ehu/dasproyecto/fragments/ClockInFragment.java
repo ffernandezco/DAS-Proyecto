@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +45,10 @@ public class ClockInFragment extends Fragment {
     private NotificationHelper notificationHelper;
     private FusedLocationProviderClient fusedLocationClient;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
+    private static final String TAG = "ClockInFragment";
+
+    private boolean notificationShownThisSession = false;
+    private long lastNotificationCheckTime = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -77,6 +82,8 @@ public class ClockInFragment extends Fragment {
         };
 
         timerHandler.postDelayed(timerRunnable, 1000);
+
+        notificationShownThisSession = false;
     }
 
     @Override
@@ -84,6 +91,7 @@ public class ClockInFragment extends Fragment {
         super.onResume();
         actualizarEstadoUI();
         timerHandler.postDelayed(timerRunnable, 1000);
+        notificationShownThisSession = false;
     }
 
     @Override
@@ -146,6 +154,9 @@ public class ClockInFragment extends Fragment {
         }
 
         actualizarEstadoUI();
+
+        // Quitar estado de notificación si se pulsa botón
+        notificationShownThisSession = false;
     }
 
     private void actualizarEstadoUI() {
@@ -185,8 +196,25 @@ public class ClockInFragment extends Fragment {
     }
 
     private void checkWorkTimeCompleted() {
+        // Comprobar envíos de notificaciones
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastNotificationCheckTime < 5000) {
+            return;
+        }
+        lastNotificationCheckTime = currentTime;
+
+        // Permisos
+        if (!notificationHelper.areNotificationsEnabled()) {
+            return;
+        }
+
         if (!notificationHelper.shouldSendNotification(requireContext())) {
-            return; // No repetir notificaciones
+            return;
+        }
+
+        // Evitar notificaciones dobles
+        if (notificationShownThisSession) {
+            return;
         }
 
         List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy();
@@ -200,10 +228,25 @@ public class ClockInFragment extends Fragment {
 
         boolean isClockedIn = WorkTimeCalculator.isCurrentlyClockedIn(todaysFichajes);
 
-        // Enviar notificación si hay fichaje en curso y supera las horas
-        if ((timeRemaining[2] == 1 || (timeRemaining[0] == 0 && timeRemaining[1] == 0)) && isClockedIn) {
+        Log.d(TAG, "Tiempo trabajado: " + timeWorked[0] + ":" + timeWorked[1]);
+        Log.d(TAG, "Tiempo restante: " + timeRemaining[2] + " (-1)");
+        Log.d(TAG, "Estado: " + isClockedIn);
+
+        // Envío de notificaciones
+        if (isClockedIn && (timeRemaining[2] == 1 || (timeRemaining[0] == 0 && timeRemaining[1] <= 1))) {
+            Log.d(TAG, "Sending work complete notification from fragment");
             notificationHelper.sendWorkCompleteNotification();
-            notificationHelper.recordNotificationSent(requireContext());
+            notificationShownThisSession = true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getCurrentLocationAndRegister();
+            }
         }
     }
 }
