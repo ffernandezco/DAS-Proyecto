@@ -144,20 +144,32 @@ public class ClockInFragment extends Fragment {
         Fichaje ultimoFichaje = dbHelper.obtenerUltimoFichajeDelDia(fechaActual);
 
         if (ultimoFichaje == null || ultimoFichaje.horaSalida != null) {
+            // Entrada
             Fichaje nuevoFichaje = new Fichaje(fechaActual, horaActual, null, latitude, longitude);
             dbHelper.insertarFichaje(nuevoFichaje);
+            actualizarEstadoUI();
+            notificationShownThisSession = false;
         } else {
-            ultimoFichaje.horaSalida = horaActual;
-            ultimoFichaje.latitud = latitude;
-            ultimoFichaje.longitud = longitude;
-            dbHelper.actualizarFichaje(ultimoFichaje);
+            // Comprobar si el fichaje está completo
+            List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy();
+            float[] settings = dbHelper.getSettings();
+            float weeklyHours = settings[0];
+            int workingDays = (int) settings[1];
+
+            float dailyHours = WorkTimeCalculator.calculateDailyHours(weeklyHours, workingDays);
+            long[] timeWorked = WorkTimeCalculator.getTimeWorkedToday(todaysFichajes);
+            long[] timeRemaining = WorkTimeCalculator.getRemainingTime(timeWorked, dailyHours);
+
+            // Comprobar si quedan horas para finalizar la jornada
+            if (timeRemaining[2] == 0 && (timeRemaining[0] > 0 || timeRemaining[1] > 0)) {
+                showConfirmClockOutDialog(ultimoFichaje, horaActual, latitude, longitude);
+            } else {
+                // No mostrar dialog si se ha finalizado
+                completeClockOut(ultimoFichaje, horaActual, latitude, longitude);
+            }
         }
-
-        actualizarEstadoUI();
-
-        // Quitar estado de notificación si se pulsa botón
-        notificationShownThisSession = false;
     }
+
 
     private void actualizarEstadoUI() {
         List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy();
@@ -193,6 +205,27 @@ public class ClockInFragment extends Fragment {
                 getString(R.string.time_remaining, timeRemainingStr) :
                 getString(R.string.overtime, timeRemainingStr));
         tvTimeRemaining.setTextColor(color);
+    }
+
+    private void completeClockOut(Fichaje fichaje, String horaSalida, double latitude, double longitude) {
+        fichaje.horaSalida = horaSalida;
+        fichaje.latitud = latitude;
+        fichaje.longitud = longitude;
+        dbHelper.actualizarFichaje(fichaje);
+        actualizarEstadoUI();
+        notificationShownThisSession = false;
+    }
+
+    private void showConfirmClockOutDialog(Fichaje fichaje, String horaSalida, double latitude, double longitude) {
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(requireContext());
+        builder.setMessage(R.string.confirm_clock_out_message)
+                .setPositiveButton(R.string.yes, (dialog, id) -> {
+                    completeClockOut(fichaje, horaSalida, latitude, longitude);
+                })
+                .setNegativeButton(R.string.no, (dialog, id) -> {
+                    dialog.dismiss();
+                });
+        builder.create().show();
     }
 
     private void checkWorkTimeCompleted() {
