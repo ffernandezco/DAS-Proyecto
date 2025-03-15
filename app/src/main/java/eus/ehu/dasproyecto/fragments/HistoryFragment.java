@@ -4,12 +4,15 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.List;
 
 import eus.ehu.dasproyecto.DatabaseHelper;
 import eus.ehu.dasproyecto.Fichaje;
@@ -20,6 +23,8 @@ import eus.ehu.dasproyecto.R;
 public class HistoryFragment extends Fragment {
     private DatabaseHelper dbHelper;
     private FichajeAdapter adapter;
+    private TextView tvEmptyHistory;
+    private RecyclerView recyclerView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -32,7 +37,10 @@ public class HistoryFragment extends Fragment {
 
         dbHelper = new DatabaseHelper(requireContext());
 
-        RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
+        // Iniciar RecyclerView
+        recyclerView = view.findViewById(R.id.recyclerView);
+        tvEmptyHistory = view.findViewById(R.id.tvEmptyHistory);
+
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         adapter = new FichajeAdapter(fichaje -> showFichajeDetails(fichaje));
         recyclerView.setAdapter(adapter);
@@ -47,7 +55,17 @@ public class HistoryFragment extends Fragment {
     }
 
     private void actualizarLista() {
-        adapter.setFichajes(dbHelper.obtenerTodosLosFichajes());
+        List<Fichaje> fichajes = dbHelper.obtenerTodosLosFichajes();
+        adapter.setFichajes(fichajes);
+
+        // En caso de no haber fichajes, no mostrar nada
+        if (fichajes.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            tvEmptyHistory.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            tvEmptyHistory.setVisibility(View.GONE);
+        }
     }
 
     private void showFichajeDetails(Fichaje fichaje) {
