@@ -43,4 +43,10 @@
     <string name="confirm_delete_message">¿Estás seguro de que quieres eliminar todos los registros de fichaje? Esta acción no se puede deshacer.</string>
     <string name="history_deleted">Historial eliminado correctamente</string>
     <string name="confirming">Eliminar</string>
+    <string name="app_logo">Control de fichaje</string>
+    <string name="app_description">Control de fichaje de la empresa</string>
+    <string name="clock_in">Fichar</string>
+    <string name="history">Historial</string>
+    <string name="hours">horas</string>
+    <string name="minutes">minutos</string>
 </resources>

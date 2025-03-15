@@ -43,4 +43,10 @@
     <string name="confirm_delete_message">Are you sure you want to delete all clock in/out records? This action cannot be undone.</string>
     <string name="history_deleted">History deleted successfully</string>
     <string name="confirming">Delete</string>
+    <string name="app_logo">Control de fichaje</string>
+    <string name="app_description">Control de fichaje de la empresa</string>
+    <string name="clock_in">Fichar</string>
+    <string name="history">Historial</string>
+    <string name="hours">horas</string>
+    <string name="minutes">minutos</string>
 </resources>

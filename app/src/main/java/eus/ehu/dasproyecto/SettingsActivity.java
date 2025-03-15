@@ -27,16 +27,13 @@ public class SettingsActivity extends AppCompatActivity {
     private Button btnDeleteHistory;
     private DatabaseHelper dbHelper;
 
-    // Day selectors
     private ToggleButton toggleMonday, toggleTuesday, toggleWednesday,
             toggleThursday, toggleFriday, toggleSaturday, toggleSunday;
     private List<ToggleButton> dayToggles;
 
-    // To store selected hours and minutes
     private int selectedHours = 40;
     private int selectedMinutes = 0;
 
-    // Constants for the pickers
     private static final int MAX_HOURS = 168; // Maximum of 168 hours in a week
     private static final int MIN_HOURS = 0;
     private static final int MAX_MINUTES = 55; // In 5-minute increments
@@ -50,10 +47,8 @@ public class SettingsActivity extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
 
-        // Initialize UI components
         spinnerLanguage = findViewById(R.id.spinnerLanguage);
 
-        // Initialize number picker components
         tvHoursValue = findViewById(R.id.tvHoursValue);
         tvMinutesValue = findViewById(R.id.tvMinutesValue);
         btnIncreaseHours = findViewById(R.id.btnIncreaseHours);
@@ -63,36 +58,30 @@ public class SettingsActivity extends AppCompatActivity {
 
         btnDeleteHistory = findViewById(R.id.btnDeleteHistory);
 
-        // Set up delete history button
         btnDeleteHistory.setOnClickListener(v -> {
             showDeleteConfirmationDialog();
         });
 
         btnSave = findViewById(R.id.btnSaveSettings);
 
-        // Initialize day toggles
         initializeDayToggles();
 
-        // Set up language spinner
         String[] languages = {"Español", "English"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_dropdown_item, languages);
         spinnerLanguage.setAdapter(adapter);
 
-        // Load saved settings
         loadSavedSettings();
 
-        // Set up picker buttons
         setupNumberPickers();
 
-        // Save button click listener
         btnSave.setOnClickListener(v -> {
             String selectedLanguage = spinnerLanguage.getSelectedItemPosition() == 0 ? "es" : "en";
 
-            // Calculate weekly hours from selected hours and minutes
+            // Calcula horas semanales a trabajar en función de los parámetros de horas y días
             float weeklyHours = selectedHours + (selectedMinutes / 60.0f);
 
-            // Count selected working days
+            // Contador de los días seleccionados
             int workingDays = countSelectedDays();
 
             if (weeklyHours <= 0 || weeklyHours > 168 || workingDays <= 0 || workingDays > 7) {
@@ -101,18 +90,18 @@ public class SettingsActivity extends AppCompatActivity {
                 return;
             }
 
-            // Save settings
+            // Almacenar preferencias
             saveLanguagePreference(selectedLanguage);
             dbHelper.saveSettings(weeklyHours, workingDays);
 
-            // Update locale and restart app
+            // Reinicia la app si se cambia el idioma para que se use strings-en o el asociado
             setAppLocale(selectedLanguage);
             restartApp();
         });
     }
 
+    // Configura el selector de horas y minutos a la semana
     private void setupNumberPickers() {
-        // Hours controls
         btnIncreaseHours.setOnClickListener(v -> {
             if (selectedHours < MAX_HOURS) {
                 selectedHours++;
@@ -127,12 +116,12 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
-        // Minutes controls
+        // Control de minutos
         btnIncreaseMinutes.setOnClickListener(v -> {
             selectedMinutes += MINUTE_INCREMENT;
             if (selectedMinutes > MAX_MINUTES) {
                 selectedMinutes = MIN_MINUTES;
-                // Increment hour if minutes wrap around
+                // Si los minutos exceden 60, sumar hora
                 if (selectedHours < MAX_HOURS) {
                     selectedHours++;
                     updateHoursDisplay();
@@ -145,7 +134,7 @@ public class SettingsActivity extends AppCompatActivity {
             selectedMinutes -= MINUTE_INCREMENT;
             if (selectedMinutes < MIN_MINUTES) {
                 selectedMinutes = MAX_MINUTES;
-                // Decrement hour if minutes wrap around
+                // Si los minutos son ya 0, restar hora
                 if (selectedHours > MIN_HOURS) {
                     selectedHours--;
                     updateHoursDisplay();
@@ -172,7 +161,6 @@ public class SettingsActivity extends AppCompatActivity {
         toggleSaturday = findViewById(R.id.toggleSaturday);
         toggleSunday = findViewById(R.id.toggleSunday);
 
-        // Add to list for easier handling
         dayToggles = new ArrayList<>();
         dayToggles.add(toggleMonday);
         dayToggles.add(toggleTuesday);
@@ -194,28 +182,25 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void setSelectedDays(int days) {
-        // Default to Monday-Friday if the number doesn't make sense
+        // Por defecto
         if (days <= 0 || days > 7) {
             days = 5;
             for (int i = 0; i < dayToggles.size(); i++) {
-                dayToggles.get(i).setChecked(i < 5); // Check Mon-Fri
+                dayToggles.get(i).setChecked(i < 5); // Marcar lunes-viernes
             }
             return;
         }
 
-        // Otherwise, try to set the most common work pattern
+        // Marcar lunes-viernes
         if (days == 5) {
-            // Standard Mon-Fri
             for (int i = 0; i < dayToggles.size(); i++) {
                 dayToggles.get(i).setChecked(i < 5);
             }
         } else if (days < 5) {
-            // First days of the week
             for (int i = 0; i < dayToggles.size(); i++) {
                 dayToggles.get(i).setChecked(i < days);
             }
         } else {
-            // More than 5 days, add weekend days
             for (int i = 0; i < dayToggles.size(); i++) {
                 dayToggles.get(i).setChecked(i < days);
             }
@@ -223,23 +208,23 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void loadSavedSettings() {
-        // Load language preference
+        // Cargar idioma guardado
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         String lang = prefs.getString("language", "es");
         spinnerLanguage.setSelection(lang.equals("es") ? 0 : 1);
 
-        // Load hours and days settings
+        // Mostrar el resto de ajustes
         float[] settings = dbHelper.getSettings();
 
-        // Split hours into whole hours and minutes
+        // Divisor de horas a horas y minutos
         selectedHours = (int) settings[0];
-        // Round to the nearest 5 minutes
+
+        // Aplicar redondeo para tener minutos de 5 en 5
         selectedMinutes = Math.round((settings[0] - selectedHours) * 60 / MINUTE_INCREMENT) * MINUTE_INCREMENT;
 
         updateHoursDisplay();
         updateMinutesDisplay();
 
-        // Set working days
         setSelectedDays((int) settings[1]);
     }
 
