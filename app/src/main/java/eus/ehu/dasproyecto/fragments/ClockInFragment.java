@@ -29,6 +29,7 @@ import java.util.Locale;
 
 import eus.ehu.dasproyecto.DatabaseHelper;
 import eus.ehu.dasproyecto.Fichaje;
+import eus.ehu.dasproyecto.FichajeEvents;
 import eus.ehu.dasproyecto.NotificationHelper;
 import eus.ehu.dasproyecto.R;
 import eus.ehu.dasproyecto.WorkTimeCalculator;
@@ -84,6 +85,18 @@ public class ClockInFragment extends Fragment {
         timerHandler.postDelayed(timerRunnable, 1000);
 
         notificationShownThisSession = false;
+
+        FichajeEvents.setListener(new FichajeEvents.FichajeChangeListener() {
+            @Override
+            public void onFichajeChanged() {
+                // Recalcula el tiempo si se actualiza un fichaje
+                if (isAdded() && getContext() != null) {
+                    timerHandler.removeCallbacks(timerRunnable);
+                    actualizarEstadoUI();
+                    timerHandler.postDelayed(timerRunnable, 1000);
+                }
+            }
+        });
     }
 
     @Override
@@ -98,6 +111,12 @@ public class ClockInFragment extends Fragment {
     public void onPause() {
         super.onPause();
         timerHandler.removeCallbacks(timerRunnable);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        FichajeEvents.setListener(null);
     }
 
     private void checkLocationPermissionAndRegister() {

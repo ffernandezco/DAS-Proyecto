@@ -210,4 +210,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.delete(TABLE_FICHAJES, null, null);
         db.close();
     }
+
+    public void actualizarHoraEntrada(Fichaje fichaje) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_HORA_ENTRADA, fichaje.horaEntrada);
+
+        db.update(TABLE_FICHAJES, values, COLUMN_ID + " = ?", new String[]{String.valueOf(fichaje.id)});
+        db.close();
+    }
+
+    public void actualizarFichajeCompleto(Fichaje fichaje) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_HORA_ENTRADA, fichaje.horaEntrada);
+        values.put(COLUMN_HORA_SALIDA, fichaje.horaSalida);
+
+        db.update(TABLE_FICHAJES, values, COLUMN_ID + " = ?", new String[]{String.valueOf(fichaje.id)});
+        db.close();
+    }
 }

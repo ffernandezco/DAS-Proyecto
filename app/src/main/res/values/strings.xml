@@ -50,4 +50,13 @@
     <string name="hours">horas</string>
     <string name="minutes">minutos</string>
     <string name="no_history_available">No hay ningún fichaje registrado aún</string>
+    <string name="edit_fichaje">Editar fichaje</string>
+    <string name="hora_entrada">Hora de entrada:</string>
+    <string name="hora_salida">Hora de salida:</string>
+    <string name="cambiar">Cambiar</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="guardar">Guardar</string>
+    <string name="editar">Editar</string>
+    <string name="detalles_fichaje">Detalles del fichaje</string>
+    <string name="fichaje_updated">Fichaje actualizado correctamente</string>
 </resources>

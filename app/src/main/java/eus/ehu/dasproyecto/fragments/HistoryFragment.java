@@ -20,7 +20,7 @@ import eus.ehu.dasproyecto.FichajeAdapter;
 import eus.ehu.dasproyecto.FichajeDetailsDialog;
 import eus.ehu.dasproyecto.R;
 
-public class HistoryFragment extends Fragment {
+public class HistoryFragment extends Fragment implements FichajeDetailsDialog.OnFichajeUpdatedListener {
     private DatabaseHelper dbHelper;
     private FichajeAdapter adapter;
     private TextView tvEmptyHistory;
@@ -69,7 +69,13 @@ public class HistoryFragment extends Fragment {
     }
 
     private void showFichajeDetails(Fichaje fichaje) {
-        FichajeDetailsDialog dialog = new FichajeDetailsDialog(fichaje);
+        FichajeDetailsDialog dialog = new FichajeDetailsDialog(fichaje, this);
         dialog.show(getParentFragmentManager(), "FichajeDetailsDialog");
+    }
+
+    @Override
+    public void onFichajeUpdated() {
+        // Actualiza la lista dinámicamente si se actualiza un fichaje
+        actualizarLista();
     }
 }
