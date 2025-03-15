@@ -84,7 +84,9 @@
                             android:layout_width="48dp"
                             android:layout_height="48dp"
                             android:text="+"
-                            android:textSize="20sp" />
+                            android:textSize="24sp"
+                            android:textAlignment="center"
+                            android:padding="0dp" />
 
                         <TextView
                             android:id="@+id/tvHoursValue"
@@ -99,7 +101,9 @@
                             android:layout_width="48dp"
                             android:layout_height="48dp"
                             android:text="-"
-                            android:textSize="20sp" />
+                            android:textSize="24sp"
+                            android:textAlignment="center"
+                            android:padding="0dp" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -120,7 +124,9 @@
                             android:layout_width="48dp"
                             android:layout_height="48dp"
                             android:text="+"
-                            android:textSize="20sp" />
+                            android:textSize="24sp"
+                            android:textAlignment="center"
+                            android:padding="0dp" />
 
                         <TextView
                             android:id="@+id/tvMinutesValue"
@@ -135,7 +141,9 @@
                             android:layout_width="48dp"
                             android:layout_height="48dp"
                             android:text="-"
-                            android:textSize="20sp" />
+                            android:textSize="24sp"
+                            android:textAlignment="center"
+                            android:padding="0dp" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>

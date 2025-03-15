@@ -49,6 +49,18 @@ public class SettingsFragment extends Fragment {
     private static final int MINUTE_INCREMENT = 5;
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        applyLanguageFromPreferences();
+    }
+
+    private void applyLanguageFromPreferences() {
+        SharedPreferences prefs = requireActivity().getSharedPreferences("AppPrefs", requireContext().MODE_PRIVATE);
+        String lang = prefs.getString("language", "es");
+        setAppLocale(lang);
+    }
+
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_settings, container, false);
     }
@@ -217,7 +229,7 @@ public class SettingsFragment extends Fragment {
     private void setAppLocale(String lang) {
         Locale locale = new Locale(lang);
         Locale.setDefault(locale);
-        Configuration config = new Configuration();
+        Configuration config = requireContext().getResources().getConfiguration();
         config.setLocale(locale);
         requireContext().getResources().updateConfiguration(config, requireContext().getResources().getDisplayMetrics());
     }
