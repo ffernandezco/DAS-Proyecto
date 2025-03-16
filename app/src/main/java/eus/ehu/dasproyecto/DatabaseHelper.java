@@ -2,6 +2,7 @@ package eus.ehu.dasproyecto;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -13,8 +14,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "fichaje_db";
     private static final int DATABASE_VERSION = 1;
 
-    //Inicializar tabla de fichajes
-
     private static final String TABLE_FICHAJES = "fichajes";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_FECHA = "fecha";
@@ -25,6 +24,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_SETTINGS = "settings";
     private static final String COLUMN_WEEKLY_HOURS = "weekly_hours";
     private static final String COLUMN_WORKING_DAYS = "working_days";
+    private static final String TABLE_USERS = "users";
+    private static final String COLUMN_USER_ID = "id";
+    private static final String COLUMN_USERNAME = "username";
+    private static final String COLUMN_PASSWORD = "password";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -32,20 +35,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        // Tabla de fichajes
         String createFichajesTable = "CREATE TABLE " + TABLE_FICHAJES + " (" +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COLUMN_FECHA + " TEXT, " +
                 COLUMN_HORA_ENTRADA + " TEXT, " +
                 COLUMN_HORA_SALIDA + " TEXT, " +
                 COLUMN_LATITUD + " REAL, " +
-                COLUMN_LONGITUD + " REAL)";
+                COLUMN_LONGITUD + " REAL, " +
+                COLUMN_USERNAME + " TEXT)";
         db.execSQL(createFichajesTable);
 
+        // Tabla de configuraciones
         String createSettingsTable = "CREATE TABLE " + TABLE_SETTINGS + " (" +
                 COLUMN_ID + " INTEGER PRIMARY KEY, " +
                 COLUMN_WEEKLY_HOURS + " REAL, " +
                 COLUMN_WORKING_DAYS + " INTEGER)";
         db.execSQL(createSettingsTable);
+
+        // Tabla de usuarios
+        db.execSQL("CREATE TABLE " + TABLE_USERS + " (" +
+                COLUMN_USER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COLUMN_USERNAME + " TEXT UNIQUE, " +
+                COLUMN_PASSWORD + " TEXT)");
+
+        // Usuarios por defecto
+        db.execSQL("INSERT INTO " + TABLE_USERS + " (username, password) VALUES ('demo', 'demo')");
     }
 
     @Override
@@ -63,16 +78,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_HORA_SALIDA, fichaje.horaSalida);
         values.put(COLUMN_LATITUD, fichaje.latitud);
         values.put(COLUMN_LONGITUD, fichaje.longitud);
+        values.put(COLUMN_USERNAME, fichaje.username);
 
         db.insert(TABLE_FICHAJES, null, values);
         db.close();
     }
 
     // Devuelve el listado completo, e.g. RecyclerView
-    public List<Fichaje> obtenerTodosLosFichajes() {
+    public List<Fichaje> obtenerTodosLosFichajes(String username) {
         List<Fichaje> listaFichajes = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_FICHAJES + " ORDER BY fecha DESC, hora_entrada DESC", null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_FICHAJES +
+                        " WHERE " + COLUMN_USERNAME + " = ? ORDER BY fecha DESC, hora_entrada DESC",
+                new String[]{username});
 
         if (cursor.moveToFirst()) {
             do {
@@ -82,7 +100,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         cursor.getString(2),
                         cursor.getString(3),
                         cursor.getDouble(4),
-                        cursor.getDouble(5)
+                        cursor.getDouble(5),
+                        cursor.getString(6)
                 );
                 listaFichajes.add(fichaje);
             } while (cursor.moveToNext());
@@ -93,10 +112,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Devuelve el último fichaje para poderlo actualizar (trampa con limit)
-    public Fichaje obtenerUltimoFichajeDelDia(String fecha) {
+    public Fichaje obtenerUltimoFichajeDelDia(String fecha, String username) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_FICHAJES + " WHERE fecha = ? ORDER BY hora_entrada DESC LIMIT 1",
-                new String[]{fecha});
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_FICHAJES +
+                        " WHERE fecha = ? AND " + COLUMN_USERNAME + " = ? ORDER BY hora_entrada DESC LIMIT 1",
+                new String[]{fecha, username});
 
         if (cursor.moveToFirst()) {
             Fichaje fichaje = new Fichaje(
@@ -105,7 +125,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     cursor.getString(2),
                     cursor.getString(3),
                     cursor.getDouble(4),
-                    cursor.getDouble(5)
+                    cursor.getDouble(5),
+                    cursor.getString(6)
             );
             cursor.close();
             db.close();
@@ -128,7 +149,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public List<Fichaje> obtenerFichajesDeHoy() {
+    public List<Fichaje> obtenerFichajesDeHoy(String username) {
         List<Fichaje> listaFichajes = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -136,8 +157,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String fechaActual = sdfFecha.format(new Date());
 
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_FICHAJES +
-                        " WHERE fecha = ? ORDER BY hora_entrada ASC",
-                new String[]{fechaActual});
+                        " WHERE fecha = ? AND " + COLUMN_USERNAME + " = ? ORDER BY hora_entrada ASC",
+                new String[]{fechaActual, username});
 
         if (cursor.moveToFirst()) {
             do {
@@ -147,7 +168,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         cursor.getString(2),
                         cursor.getString(3),
                         cursor.getDouble(4),
-                        cursor.getDouble(5)
+                        cursor.getDouble(5),
+                        cursor.getString(6)
                 );
                 listaFichajes.add(fichaje);
             } while (cursor.moveToNext());
@@ -205,9 +227,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return settings;
     }
 
-    public void deleteAllFichajes() {
+    public void deleteAllFichajes(String username) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_FICHAJES, null, null);
+        db.delete(TABLE_FICHAJES, COLUMN_USERNAME + " = ?", new String[]{username}); // Solo elimina fichajes del usuario
         db.close();
     }
 
@@ -228,5 +250,42 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         db.update(TABLE_FICHAJES, values, COLUMN_ID + " = ?", new String[]{String.valueOf(fichaje.id)});
         db.close();
+    }
+
+    public boolean validarUsuario(String username, String password) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_USERS + " WHERE username=? AND password=?", new String[]{username, password});
+        boolean valido = cursor.getCount() > 0;
+        cursor.close();
+        return valido;
+    }
+
+    public String getCurrentUsername(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE);
+        return sharedPreferences.getString("usuario_actual", "unknown_user");
+    }
+
+    public boolean userExists(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_USERS + " WHERE username=?",
+                new String[]{username});
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+        return exists;
+    }
+
+    public boolean addUser(String username, String password) {
+        if (userExists(username)) {
+            return false;
+        }
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_USERNAME, username);
+        values.put(COLUMN_PASSWORD, password);
+
+        long result = db.insert(TABLE_USERS, null, values);
+        db.close();
+        return result != -1;
     }
 }

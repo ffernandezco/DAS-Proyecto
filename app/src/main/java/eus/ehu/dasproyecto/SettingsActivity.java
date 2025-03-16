@@ -34,9 +34,9 @@ public class SettingsActivity extends AppCompatActivity {
     private int selectedHours = 40;
     private int selectedMinutes = 0;
 
-    private static final int MAX_HOURS = 168; // Maximum of 168 hours in a week
+    private static final int MAX_HOURS = 168;
     private static final int MIN_HOURS = 0;
-    private static final int MAX_MINUTES = 55; // In 5-minute increments
+    private static final int MAX_MINUTES = 55;
     private static final int MIN_MINUTES = 0;
     private static final int MINUTE_INCREMENT = 5;
 
@@ -255,8 +255,9 @@ public class SettingsActivity extends AppCompatActivity {
         builder.setTitle(getString(R.string.confirm_delete_title))
                 .setMessage(getString(R.string.confirm_delete_message))
                 .setPositiveButton(getString(R.string.confirming), (dialog, which) -> {
-                    // Elimina todos los fichakes
-                    dbHelper.deleteAllFichajes();
+                    // Elimina todos los fichajes del usuario actual
+                    String username = dbHelper.getCurrentUsername(this);
+                    dbHelper.deleteAllFichajes(username);
                     Toast.makeText(this, getString(R.string.history_deleted), Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton(getString(R.string.no), (dialog, which) -> {

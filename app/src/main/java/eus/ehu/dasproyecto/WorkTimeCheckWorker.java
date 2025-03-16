@@ -36,7 +36,8 @@ public class WorkTimeCheckWorker extends Worker {
                 return Result.success();
             }
 
-            List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy();
+            String username = dbHelper.getCurrentUsername(appContext);
+            List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy(username);
             float[] settings = dbHelper.getSettings();
             float weeklyHours = settings[0];
             int workingDays = (int) settings[1];

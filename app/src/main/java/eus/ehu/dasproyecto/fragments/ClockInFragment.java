@@ -1,6 +1,8 @@
 package eus.ehu.dasproyecto.fragments;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -119,6 +121,7 @@ public class ClockInFragment extends Fragment {
         FichajeEvents.setListener(null);
     }
 
+    // Comprobar permisos de localización
     private void checkLocationPermissionAndRegister() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -130,6 +133,7 @@ public class ClockInFragment extends Fragment {
         }
     }
 
+    // Obtener localización para añadir al fichaje
     private void getCurrentLocationAndRegister() {
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -160,17 +164,19 @@ public class ClockInFragment extends Fragment {
         String fechaActual = sdfFecha.format(new Date());
         String horaActual = sdfHora.format(new Date());
 
-        Fichaje ultimoFichaje = dbHelper.obtenerUltimoFichajeDelDia(fechaActual);
+        String username = dbHelper.getCurrentUsername(requireContext());
+
+        Fichaje ultimoFichaje = dbHelper.obtenerUltimoFichajeDelDia(fechaActual, username);
 
         if (ultimoFichaje == null || ultimoFichaje.horaSalida != null) {
             // Entrada
-            Fichaje nuevoFichaje = new Fichaje(fechaActual, horaActual, null, latitude, longitude);
+            Fichaje nuevoFichaje = new Fichaje(fechaActual, horaActual, null, latitude, longitude, username);
             dbHelper.insertarFichaje(nuevoFichaje);
             actualizarEstadoUI();
             notificationShownThisSession = false;
         } else {
             // Comprobar si el fichaje está completo
-            List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy();
+            List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy(username);
             float[] settings = dbHelper.getSettings();
             float weeklyHours = settings[0];
             int workingDays = (int) settings[1];
@@ -189,9 +195,10 @@ public class ClockInFragment extends Fragment {
         }
     }
 
-
+    // Actualizaciones dinámicas
     private void actualizarEstadoUI() {
-        List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy();
+        String username = dbHelper.getCurrentUsername(requireContext());
+        List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy(username);
         float[] settings = dbHelper.getSettings();
         float weeklyHours = settings[0];
         int workingDays = (int) settings[1];
@@ -226,6 +233,7 @@ public class ClockInFragment extends Fragment {
         tvTimeRemaining.setTextColor(color);
     }
 
+    // Añadir hora de salida
     private void completeClockOut(Fichaje fichaje, String horaSalida, double latitude, double longitude) {
         fichaje.horaSalida = horaSalida;
         fichaje.latitud = latitude;
@@ -235,6 +243,7 @@ public class ClockInFragment extends Fragment {
         notificationShownThisSession = false;
     }
 
+    // Mensaje para hora de salida anterior a la prevista
     private void showConfirmClockOutDialog(Fichaje fichaje, String horaSalida, double latitude, double longitude) {
         androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(requireContext());
         builder.setMessage(R.string.confirm_clock_out_message)
@@ -269,7 +278,8 @@ public class ClockInFragment extends Fragment {
             return;
         }
 
-        List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy();
+        String username = dbHelper.getCurrentUsername(requireContext());
+        List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy(username);
         float[] settings = dbHelper.getSettings();
         float weeklyHours = settings[0];
         int workingDays = (int) settings[1];

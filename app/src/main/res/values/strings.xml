@@ -16,7 +16,7 @@
     <string name="pendiente">Pendiente</string>
     <string name="ubicacion_no_disponible">Ubicación: No disponible</string>
     <string name="ubicacion">Ubicación: %1$.6f, %2$.6f</string>
-    <string name="ver_mapa">Ver Mapa</string>
+    <string name="ver_mapa">Mapa</string>
     <string name="ubicacion_fichaje">Ubicación de fichaje</string>
     <string name="detalle">Detalles del fichaje:</string>
     <string name="mapa">Ver en mapa</string>
@@ -64,10 +64,10 @@
     <string name="status">Estado</string>
     <string name="custom_logo">Logo personalizado</string>
     <string name="change_logo">Cambiar</string>
-    <string name="reset_logo">Restablecer</string>
+    <string name="reset_logo">Quitar</string>
     <string name="logo_changed">Logotipo guardado correctamente</string>
-    <string name="logo_reset">Logo restablecido</string>
-    <string name="select_image">Seleccionar imagen</string>
+    <string name="logo_reset">Logotipo quitado</string>
+    <string name="select_image">Seleccionar logotipo</string>
     <string name="export_history">Exportar</string>
     <string name="import_history">Importar</string>
     <string name="export_success">Historial exportado correctamente</string>
@@ -76,4 +76,20 @@
     <string name="import_error">Error al importar el historial</string>
     <string name="file_not_found">Archivo no encontrado</string>
     <string name="invalid_file_format">Formato de archivo inválido</string>
+    <string name="login">Iniciar sesión</string>
+    <string name="user">Usuario</string>
+    <string name="pass">Contraseña</string>
+    <string name="login_button">Iniciar sesión</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="logout_success">Sesión cerrada correctamente</string>
+    <string name="todos_los_campos_son_obligatorios">Todos los campos son obligatorios</string>
+    <string name="las_contrase_as_no_coinciden">Las contraseñas no coinciden</string>
+    <string name="el_nombre_de_usuario_ya_existe">Ya existe un usuario con ese nombre</string>
+    <string name="registro_exitoso">¡Usuario creado! Ya puedes iniciar sesión</string>
+    <string name="error_en_el_registro">Error en el registro. Por favor, revisa los campos</string>
+    <string name="signup">Registro</string>
+    <string name="signup_button">Registrarse</string>
+    <string name="confirm_pass">Confirmar contraseña</string>
+    <string name="new_account">¿No tienes cuenta? Regístrate</string>
+    <string name="have_account">¿Ya tienes una cuenta? Iniciar sesión</string>
 </resources>
