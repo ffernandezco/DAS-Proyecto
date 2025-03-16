@@ -80,4 +80,6 @@
     <string name="user">Usuario</string>
     <string name="pass">Contraseña</string>
     <string name="login_button">Iniciar sesión</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="logout_success">Sesión cerrada correctamente</string>
 </resources>

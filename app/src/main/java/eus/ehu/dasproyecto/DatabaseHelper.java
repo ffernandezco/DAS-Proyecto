@@ -2,6 +2,7 @@ package eus.ehu.dasproyecto;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -43,7 +44,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_HORA_ENTRADA + " TEXT, " +
                 COLUMN_HORA_SALIDA + " TEXT, " +
                 COLUMN_LATITUD + " REAL, " +
-                COLUMN_LONGITUD + " REAL)";
+                COLUMN_LONGITUD + " REAL, " +
+                COLUMN_USERNAME + " TEXT)";
         db.execSQL(createFichajesTable);
 
         // Tabla de configuraciones
@@ -78,16 +80,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_HORA_SALIDA, fichaje.horaSalida);
         values.put(COLUMN_LATITUD, fichaje.latitud);
         values.put(COLUMN_LONGITUD, fichaje.longitud);
+        values.put(COLUMN_USERNAME, fichaje.username);
 
         db.insert(TABLE_FICHAJES, null, values);
         db.close();
     }
 
     // Devuelve el listado completo, e.g. RecyclerView
-    public List<Fichaje> obtenerTodosLosFichajes() {
+    public List<Fichaje> obtenerTodosLosFichajes(String username) {
         List<Fichaje> listaFichajes = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_FICHAJES + " ORDER BY fecha DESC, hora_entrada DESC", null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_FICHAJES +
+                        " WHERE " + COLUMN_USERNAME + " = ? ORDER BY fecha DESC, hora_entrada DESC",
+                new String[]{username});
 
         if (cursor.moveToFirst()) {
             do {
@@ -97,7 +102,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         cursor.getString(2),
                         cursor.getString(3),
                         cursor.getDouble(4),
-                        cursor.getDouble(5)
+                        cursor.getDouble(5),
+                        cursor.getString(6)
                 );
                 listaFichajes.add(fichaje);
             } while (cursor.moveToNext());
@@ -108,10 +114,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Devuelve el último fichaje para poderlo actualizar (trampa con limit)
-    public Fichaje obtenerUltimoFichajeDelDia(String fecha) {
+    public Fichaje obtenerUltimoFichajeDelDia(String fecha, String username) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_FICHAJES + " WHERE fecha = ? ORDER BY hora_entrada DESC LIMIT 1",
-                new String[]{fecha});
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_FICHAJES +
+                        " WHERE fecha = ? AND " + COLUMN_USERNAME + " = ? ORDER BY hora_entrada DESC LIMIT 1",
+                new String[]{fecha, username});
 
         if (cursor.moveToFirst()) {
             Fichaje fichaje = new Fichaje(
@@ -120,7 +127,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     cursor.getString(2),
                     cursor.getString(3),
                     cursor.getDouble(4),
-                    cursor.getDouble(5)
+                    cursor.getDouble(5),
+                    cursor.getString(6)
             );
             cursor.close();
             db.close();
@@ -143,7 +151,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public List<Fichaje> obtenerFichajesDeHoy() {
+    public List<Fichaje> obtenerFichajesDeHoy(String username) {
         List<Fichaje> listaFichajes = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -151,8 +159,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String fechaActual = sdfFecha.format(new Date());
 
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_FICHAJES +
-                        " WHERE fecha = ? ORDER BY hora_entrada ASC",
-                new String[]{fechaActual});
+                        " WHERE fecha = ? AND " + COLUMN_USERNAME + " = ? ORDER BY hora_entrada ASC",
+                new String[]{fechaActual, username});
 
         if (cursor.moveToFirst()) {
             do {
@@ -162,7 +170,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         cursor.getString(2),
                         cursor.getString(3),
                         cursor.getDouble(4),
-                        cursor.getDouble(5)
+                        cursor.getDouble(5),
+                        cursor.getString(6)
                 );
                 listaFichajes.add(fichaje);
             } while (cursor.moveToNext());
@@ -220,9 +229,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return settings;
     }
 
-    public void deleteAllFichajes() {
+    public void deleteAllFichajes(String username) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_FICHAJES, null, null);
+        db.delete(TABLE_FICHAJES, COLUMN_USERNAME + " = ?", new String[]{username}); // Solo elimina fichajes del usuario
         db.close();
     }
 
@@ -251,5 +260,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         boolean valido = cursor.getCount() > 0;
         cursor.close();
         return valido;
+    }
+
+    public String getCurrentUsername(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE);
+        return sharedPreferences.getString("usuario_actual", "unknown_user");
     }
 }

@@ -112,7 +112,8 @@ public class HistoryFragment extends Fragment implements FichajeDetailsDialog.On
     }
 
     private void actualizarLista() {
-        List<Fichaje> fichajes = dbHelper.obtenerTodosLosFichajes();
+        String username = dbHelper.getCurrentUsername(requireContext());
+        List<Fichaje> fichajes = dbHelper.obtenerTodosLosFichajes(username);
         adapter.setFichajes(fichajes);
 
         // Estado vacío si no hay fichajes guardados
@@ -158,24 +159,26 @@ public class HistoryFragment extends Fragment implements FichajeDetailsDialog.On
 
     private void processExportFile(Uri uri) {
         try {
-            List<Fichaje> fichajes = dbHelper.obtenerTodosLosFichajes();
+            String username = dbHelper.getCurrentUsername(requireContext());
+            List<Fichaje> fichajes = dbHelper.obtenerTodosLosFichajes(username);
 
             FileOutputStream fos = (FileOutputStream) requireContext().getContentResolver().openOutputStream(uri);
             OutputStreamWriter osw = new OutputStreamWriter(fos);
 
-            // Cabecera CSV
-            osw.write("ID,Fecha,Hora Entrada,Hora Salida,Latitud,Longitud\n");
+            // Cabecera del CSV
+            osw.write("ID,Fecha,Hora Entrada,Hora Salida,Latitud,Longitud,Username\n");
 
-            // Exportar cada uno de los fichajes de la BD
+            // Líneas del CSV
             for (Fichaje fichaje : fichajes) {
                 osw.write(String.format(Locale.getDefault(),
-                        "%d,%s,%s,%s,%f,%f\n",
+                        "%d,%s,%s,%s,%f,%f,%s\n",
                         fichaje.id,
                         fichaje.fecha,
                         fichaje.horaEntrada,
                         fichaje.horaSalida != null ? fichaje.horaSalida : "",
                         fichaje.latitud,
-                        fichaje.longitud));
+                        fichaje.longitud,
+                        fichaje.username));
             }
 
             osw.close();
@@ -199,41 +202,44 @@ public class HistoryFragment extends Fragment implements FichajeDetailsDialog.On
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
             String line;
 
-            // Quitar cabecera
+            // Skip header
             reader.readLine();
 
             List<Fichaje> fichajesImportados = new ArrayList<>();
+            String username = dbHelper.getCurrentUsername(requireContext());
 
             while ((line = reader.readLine()) != null) {
                 try {
                     String[] values = line.split(",");
                     if (values.length >= 6) {
-                        // Por cada línea, crear un objeto fichaje
+                        // Create a fichaje object for each line - now with username
                         Fichaje fichaje = new Fichaje(
-                                0, // ID no necesario por el autoincrement de la BD
+                                0, // ID not needed due to DB autoincrement
                                 values[1], // fecha
                                 values[2], // horaEntrada
                                 values[3].isEmpty() ? null : values[3], // horaSalida
                                 Double.parseDouble(values[4]), // latitud
-                                Double.parseDouble(values[5])  // longitud
+                                Double.parseDouble(values[5]),  // longitud
+                                // Use the username from the CSV if available (values[6]), otherwise use current user
+                                values.length >= 7 ? values[6] : username
                         );
                         fichajesImportados.add(fichaje);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    // Parsear líneas vacias
+                    // Skip parsing errors for empty lines
                 }
             }
 
             reader.close();
             inputStream.close();
 
-            // Guardar en BD los fichajes de cada objeto creado
+            // Save each imported fichaje to the database
             for (Fichaje fichaje : fichajesImportados) {
                 dbHelper.insertarFichaje(fichaje);
             }
 
-            actualizarLista(); // Para que se vean los cambios
+            actualizarLista(); // Update the view
 
             Toast.makeText(requireContext(),
                     getString(R.string.import_success) + " (" + fichajesImportados.size() + ")",

@@ -255,8 +255,9 @@ public class SettingsActivity extends AppCompatActivity {
         builder.setTitle(getString(R.string.confirm_delete_title))
                 .setMessage(getString(R.string.confirm_delete_message))
                 .setPositiveButton(getString(R.string.confirming), (dialog, which) -> {
-                    // Elimina todos los fichakes
-                    dbHelper.deleteAllFichajes();
+                    // Elimina todos los fichajes del usuario actual
+                    String username = dbHelper.getCurrentUsername(this);
+                    dbHelper.deleteAllFichajes(username);
                     Toast.makeText(this, getString(R.string.history_deleted), Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton(getString(R.string.no), (dialog, which) -> {

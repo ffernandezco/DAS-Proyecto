@@ -1,6 +1,7 @@
 package eus.ehu.dasproyecto.fragments;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Locale;
 
 import eus.ehu.dasproyecto.DatabaseHelper;
+import eus.ehu.dasproyecto.LoginActivity;
 import eus.ehu.dasproyecto.MainActivity;
 import eus.ehu.dasproyecto.R;
 
@@ -53,6 +55,7 @@ public class SettingsFragment extends Fragment {
     private ImageView ivLogoPreview;
     private Button btnChangeLogo, btnResetLogo;
     private Uri selectedLogoUri = null;
+    private Button btnLogout;
     private static final int PICK_IMAGE_REQUEST = 1001;
 
 
@@ -100,6 +103,9 @@ public class SettingsFragment extends Fragment {
         // Listener para eliminar historial
         btnDeleteHistory.setOnClickListener(v -> showDeleteConfirmationDialog());
 
+        btnLogout = view.findViewById(R.id.btnLogout);
+        btnLogout.setOnClickListener(v -> logoutUser());
+
         loadCustomLogo();
 
         btnChangeLogo.setOnClickListener(v -> {
@@ -131,6 +137,7 @@ public class SettingsFragment extends Fragment {
         btnDecreaseMinutes = view.findViewById(R.id.btnDecreaseMinutes);
         btnSave = view.findViewById(R.id.btnSaveSettings);
         btnDeleteHistory = view.findViewById(R.id.btnDeleteHistory);
+        btnLogout = view.findViewById(R.id.btnLogout);
 
         toggleMonday = view.findViewById(R.id.toggleMonday);
         toggleTuesday = view.findViewById(R.id.toggleTuesday);
@@ -281,14 +288,17 @@ public class SettingsFragment extends Fragment {
     }
 
     private void showDeleteConfirmationDialog() {
-        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                .setTitle(getString(R.string.confirm_delete_title))
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(requireContext());
+        builder.setTitle(getString(R.string.confirm_delete_title))
                 .setMessage(getString(R.string.confirm_delete_message))
                 .setPositiveButton(getString(R.string.confirming), (dialog, which) -> {
-                    dbHelper.deleteAllFichajes();
+                    String username = dbHelper.getCurrentUsername(requireContext());
+                    dbHelper.deleteAllFichajes(username);
                     Toast.makeText(requireContext(), getString(R.string.history_deleted), Toast.LENGTH_SHORT).show();
                 })
-                .setNegativeButton(getString(R.string.no), (dialog, which) -> dialog.dismiss())
+                .setNegativeButton(getString(R.string.no), (dialog, which) -> {
+                    dialog.dismiss();
+                })
                 .setCancelable(true)
                 .show();
     }
@@ -324,5 +334,19 @@ public class SettingsFragment extends Fragment {
             ivLogoPreview.setImageURI(selectedLogoUri);
             Toast.makeText(requireContext(), R.string.logo_changed, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void logoutUser() {
+        // Limpiar sesión
+        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("app_prefs", requireContext().MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove("usuario_actual");
+        editor.apply();
+
+        // Redirigir a pantalla de login
+        Intent intent = new Intent(requireContext(), LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        Toast.makeText(requireContext(), R.string.logout_success, Toast.LENGTH_SHORT).show();
     }
 }
