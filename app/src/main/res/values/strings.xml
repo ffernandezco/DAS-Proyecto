@@ -76,4 +76,8 @@
     <string name="import_error">Error al importar el historial</string>
     <string name="file_not_found">Archivo no encontrado</string>
     <string name="invalid_file_format">Formato de archivo inválido</string>
+    <string name="login">Iniciar sesión</string>
+    <string name="user">Usuario</string>
+    <string name="pass">Contraseña</string>
+    <string name="login_button">Iniciar sesión</string>
 </resources>

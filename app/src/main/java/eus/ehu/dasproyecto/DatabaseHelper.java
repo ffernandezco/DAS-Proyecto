@@ -25,6 +25,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_SETTINGS = "settings";
     private static final String COLUMN_WEEKLY_HOURS = "weekly_hours";
     private static final String COLUMN_WORKING_DAYS = "working_days";
+    private static final String TABLE_USERS = "users";
+    private static final String COLUMN_USER_ID = "id";
+    private static final String COLUMN_USERNAME = "username";
+    private static final String COLUMN_PASSWORD = "password";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -32,6 +36,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        // Tabla de fichajes
         String createFichajesTable = "CREATE TABLE " + TABLE_FICHAJES + " (" +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COLUMN_FECHA + " TEXT, " +
@@ -41,11 +46,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_LONGITUD + " REAL)";
         db.execSQL(createFichajesTable);
 
+        // Tabla de configuraciones
         String createSettingsTable = "CREATE TABLE " + TABLE_SETTINGS + " (" +
                 COLUMN_ID + " INTEGER PRIMARY KEY, " +
                 COLUMN_WEEKLY_HOURS + " REAL, " +
                 COLUMN_WORKING_DAYS + " INTEGER)";
         db.execSQL(createSettingsTable);
+
+        // Tabla de usuarios
+        db.execSQL("CREATE TABLE " + TABLE_USERS + " (" +
+                COLUMN_USER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COLUMN_USERNAME + " TEXT UNIQUE, " +
+                COLUMN_PASSWORD + " TEXT)");
+
+        // Usuarios por defecto
+        db.execSQL("INSERT INTO " + TABLE_USERS + " (username, password) VALUES ('usuario1', '1234'), ('usuario2', '5678')");
     }
 
     @Override
@@ -228,5 +243,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         db.update(TABLE_FICHAJES, values, COLUMN_ID + " = ?", new String[]{String.valueOf(fichaje.id)});
         db.close();
+    }
+
+    public boolean validarUsuario(String username, String password) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_USERS + " WHERE username=? AND password=?", new String[]{username, password});
+        boolean valido = cursor.getCount() > 0;
+        cursor.close();
+        return valido;
     }
 }
