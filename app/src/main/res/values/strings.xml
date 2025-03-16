@@ -59,4 +59,7 @@
     <string name="editar">Editar</string>
     <string name="detalles_fichaje">Detalles del fichaje</string>
     <string name="fichaje_updated">Fichaje actualizado correctamente</string>
+    <string name="time_tracking">Registro de tiempo</string>
+    <string name="clock_action">Fichar</string>
+    <string name="status">Estado</string>
 </resources>

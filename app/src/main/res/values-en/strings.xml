@@ -59,4 +59,7 @@
     <string name="editar">Edit</string>
     <string name="detalles_fichaje">Clock-in details</string>
     <string name="fichaje_updated">Clock-in updated successfully</string>
+    <string name="time_tracking">Time registered</string>
+    <string name="clock_action">Clock-in</string>
+    <string name="status">Status</string>
 </resources>
