@@ -14,8 +14,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "fichaje_db";
     private static final int DATABASE_VERSION = 1;
 
-    //Inicializar tabla de fichajes
-
     private static final String TABLE_FICHAJES = "fichajes";
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_FECHA = "fecha";

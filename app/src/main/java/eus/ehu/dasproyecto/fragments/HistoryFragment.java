@@ -141,7 +141,7 @@ public class HistoryFragment extends Fragment implements FichajeDetailsDialog.On
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("text/csv");
 
-        // Formato de exportación csv
+        // Generar CSV asociado
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
         String fileName = "fichajes_" + sdf.format(new Date()) + ".csv";
         intent.putExtra(Intent.EXTRA_TITLE, fileName);
@@ -202,7 +202,7 @@ public class HistoryFragment extends Fragment implements FichajeDetailsDialog.On
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
             String line;
 
-            // Skip header
+            // Saltar la cabecera al leer
             reader.readLine();
 
             List<Fichaje> fichajesImportados = new ArrayList<>();
@@ -212,34 +212,33 @@ public class HistoryFragment extends Fragment implements FichajeDetailsDialog.On
                 try {
                     String[] values = line.split(",");
                     if (values.length >= 6) {
-                        // Create a fichaje object for each line - now with username
+                        // Crea objetos fichaje por cada línea
                         Fichaje fichaje = new Fichaje(
-                                0, // ID not needed due to DB autoincrement
+                                0, // La BD lo gestiona con autoincrement
                                 values[1], // fecha
                                 values[2], // horaEntrada
                                 values[3].isEmpty() ? null : values[3], // horaSalida
                                 Double.parseDouble(values[4]), // latitud
                                 Double.parseDouble(values[5]),  // longitud
-                                // Use the username from the CSV if available (values[6]), otherwise use current user
-                                values.length >= 7 ? values[6] : username
+                                username // Se asigna siempre al usuario que lo solicita
                         );
                         fichajesImportados.add(fichaje);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    // Skip parsing errors for empty lines
+                    // Errores
                 }
             }
 
             reader.close();
             inputStream.close();
 
-            // Save each imported fichaje to the database
+            // Guardar fichajes en la DB
             for (Fichaje fichaje : fichajesImportados) {
                 dbHelper.insertarFichaje(fichaje);
             }
 
-            actualizarLista(); // Update the view
+            actualizarLista();
 
             Toast.makeText(requireContext(),
                     getString(R.string.import_success) + " (" + fichajesImportados.size() + ")",

@@ -121,6 +121,7 @@ public class ClockInFragment extends Fragment {
         FichajeEvents.setListener(null);
     }
 
+    // Comprobar permisos de localización
     private void checkLocationPermissionAndRegister() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -132,6 +133,7 @@ public class ClockInFragment extends Fragment {
         }
     }
 
+    // Obtener localización para añadir al fichaje
     private void getCurrentLocationAndRegister() {
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -193,7 +195,7 @@ public class ClockInFragment extends Fragment {
         }
     }
 
-
+    // Actualizaciones dinámicas
     private void actualizarEstadoUI() {
         String username = dbHelper.getCurrentUsername(requireContext());
         List<Fichaje> todaysFichajes = dbHelper.obtenerFichajesDeHoy(username);
@@ -231,6 +233,7 @@ public class ClockInFragment extends Fragment {
         tvTimeRemaining.setTextColor(color);
     }
 
+    // Añadir hora de salida
     private void completeClockOut(Fichaje fichaje, String horaSalida, double latitude, double longitude) {
         fichaje.horaSalida = horaSalida;
         fichaje.latitud = latitude;
@@ -240,6 +243,7 @@ public class ClockInFragment extends Fragment {
         notificationShownThisSession = false;
     }
 
+    // Mensaje para hora de salida anterior a la prevista
     private void showConfirmClockOutDialog(Fichaje fichaje, String horaSalida, double latitude, double longitude) {
         androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(requireContext());
         builder.setMessage(R.string.confirm_clock_out_message)

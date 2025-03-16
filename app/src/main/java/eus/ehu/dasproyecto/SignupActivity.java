@@ -36,12 +36,12 @@ public class SignupActivity extends AppCompatActivity {
 
             if (validateInputs(username, password, confirmPassword)) {
                 if (dbHelper.addUser(username, password)) {
-                    Toast.makeText(SignupActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignupActivity.this, getString(R.string.registro_exitoso), Toast.LENGTH_SHORT).show();
                     // Redirigir al login
                     startActivity(new Intent(SignupActivity.this, LoginActivity.class));
                     finish();
                 } else {
-                    Toast.makeText(SignupActivity.this, "El usuario ya existe", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignupActivity.this, getString(R.string.el_nombre_de_usuario_ya_existe), Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -54,23 +54,18 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private boolean validateInputs(String username, String password, String confirmPassword) {
-        if (TextUtils.isEmpty(username)) {
-            editTextUsername.setError("Por favor ingrese un nombre de usuario");
-            return false;
-        }
-
-        if (TextUtils.isEmpty(password)) {
-            editTextPassword.setError("Por favor ingrese una contraseña");
+        if (TextUtils.isEmpty(username) || TextUtils.isEmpty(password) || TextUtils.isEmpty(confirmPassword)) {
+            Toast.makeText(this, getString(R.string.todos_los_campos_son_obligatorios), Toast.LENGTH_SHORT).show();
             return false;
         }
 
         if (password.length() < 4) {
-            editTextPassword.setError("La contraseña debe tener al menos 4 caracteres");
+            editTextPassword.setError(getString(R.string.error_en_el_registro));
             return false;
         }
 
         if (!password.equals(confirmPassword)) {
-            editTextConfirmPassword.setError("Las contraseñas no coinciden");
+            editTextConfirmPassword.setError(getString(R.string.las_contrase_as_no_coinciden));
             return false;
         }
 

@@ -161,6 +161,7 @@ public class SettingsFragment extends Fragment {
         btnResetLogo = view.findViewById(R.id.btnResetLogo);
     }
 
+    // Números dinámicos para las horas y minutos de la jornada
     private void setupNumberPickers() {
         btnIncreaseHours.setOnClickListener(v -> {
             if (selectedHours < MAX_HOURS) {
@@ -181,7 +182,7 @@ public class SettingsFragment extends Fragment {
             if (selectedMinutes > MAX_MINUTES) {
                 selectedMinutes = MIN_MINUTES;
                 if (selectedHours < MAX_HOURS) {
-                    selectedHours++;
+                    selectedHours++; // Sumar una hora para minutos > 60
                     updateHoursDisplay();
                 }
             }
@@ -193,7 +194,7 @@ public class SettingsFragment extends Fragment {
             if (selectedMinutes < MIN_MINUTES) {
                 selectedMinutes = MAX_MINUTES;
                 if (selectedHours > MIN_HOURS) {
-                    selectedHours--;
+                    selectedHours--; // Restar una hora para minutos < 0
                     updateHoursDisplay();
                 }
             }
@@ -280,6 +281,7 @@ public class SettingsFragment extends Fragment {
         requireContext().getResources().updateConfiguration(config, requireContext().getResources().getDisplayMetrics());
     }
 
+    // Reinicia app para aplicar cambios en configuración
     private void restartApp() {
         Intent intent = new Intent(requireContext(), MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -313,7 +315,7 @@ public class SettingsFragment extends Fragment {
                 ivLogoPreview.setImageURI(selectedLogoUri);
             } catch (Exception e) {
                 e.printStackTrace();
-                // If there's an error, reset to default logo
+                // Logo por defecto en caso de error
                 ivLogoPreview.setImageResource(R.mipmap.ic_launcher_adaptive_fore);
             }
         } else {

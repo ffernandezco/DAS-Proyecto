@@ -34,9 +34,9 @@ public class SettingsActivity extends AppCompatActivity {
     private int selectedHours = 40;
     private int selectedMinutes = 0;
 
-    private static final int MAX_HOURS = 168; // Maximum of 168 hours in a week
+    private static final int MAX_HOURS = 168;
     private static final int MIN_HOURS = 0;
-    private static final int MAX_MINUTES = 55; // In 5-minute increments
+    private static final int MAX_MINUTES = 55;
     private static final int MIN_MINUTES = 0;
     private static final int MINUTE_INCREMENT = 5;
 

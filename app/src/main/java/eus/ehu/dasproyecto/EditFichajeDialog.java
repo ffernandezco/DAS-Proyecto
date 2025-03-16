@@ -75,7 +75,7 @@ public class EditFichajeDialog extends DialogFragment {
             // Guardar datos en la DB (local)
             updateFichajeInDb();
 
-            // Notify global event system
+            // Evento
             FichajeEvents.notifyFichajeChanged();
 
             // Si el listener está activo, actualizar
