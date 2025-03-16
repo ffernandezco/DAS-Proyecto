@@ -62,7 +62,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PASSWORD + " TEXT)");
 
         // Usuarios por defecto
-        db.execSQL("INSERT INTO " + TABLE_USERS + " (username, password) VALUES ('usuario1', '1234'), ('usuario2', '5678')");
+        db.execSQL("INSERT INTO " + TABLE_USERS + " (username, password) VALUES ('demo', 'demo')");
     }
 
     @Override
@@ -265,5 +265,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public String getCurrentUsername(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE);
         return sharedPreferences.getString("usuario_actual", "unknown_user");
+    }
+
+    public boolean userExists(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_USERS + " WHERE username=?",
+                new String[]{username});
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+        return exists;
+    }
+
+    public boolean addUser(String username, String password) {
+        if (userExists(username)) {
+            return false;
+        }
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_USERNAME, username);
+        values.put(COLUMN_PASSWORD, password);
+
+        long result = db.insert(TABLE_USERS, null, values);
+        db.close();
+        return result != -1;
     }
 }
