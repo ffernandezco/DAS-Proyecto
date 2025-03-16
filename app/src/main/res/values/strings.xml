@@ -62,4 +62,10 @@
     <string name="time_tracking">Registro de tiempo</string>
     <string name="clock_action">Fichar</string>
     <string name="status">Estado</string>
+    <string name="custom_logo">Logo personalizado</string>
+    <string name="change_logo">Cambiar</string>
+    <string name="reset_logo">Restablecer</string>
+    <string name="logo_changed">Logotipo guardado correctamente</string>
+    <string name="logo_reset">Logo restablecido</string>
+    <string name="select_image">Seleccionar imagen</string>
 </resources>

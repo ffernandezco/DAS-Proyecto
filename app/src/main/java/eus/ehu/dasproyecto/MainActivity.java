@@ -4,9 +4,11 @@ import android.Manifest;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -79,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
         // DrawerLayout y NavigationView
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
+        applyCustomLogoToNavHeader(navigationView);
 
         // Configura NavController
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
@@ -106,6 +109,26 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onSupportNavigateUp() {
         return NavigationUI.navigateUp(navController, appBarConfiguration) || super.onSupportNavigateUp();
+    }
+
+    private void applyCustomLogoToNavHeader(NavigationView navigationView) {
+        View headerView = navigationView.getHeaderView(0);
+        ImageView navHeaderLogo = headerView.findViewById(R.id.nav_header_logo);
+
+        // Logo personalizado
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        String logoUriString = prefs.getString("custom_logo_uri", null);
+
+        if (logoUriString != null) {
+            try {
+                Uri logoUri = Uri.parse(logoUriString);
+                navHeaderLogo.setImageURI(logoUri);
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Logo por defecto si hay un error
+                navHeaderLogo.setImageResource(R.mipmap.ic_launcher_adaptive_fore);
+            }
+        }
     }
 
     //No necesario

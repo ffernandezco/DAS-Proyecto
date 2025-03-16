@@ -1,14 +1,17 @@
 package eus.ehu.dasproyecto.fragments;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,6 +50,11 @@ public class SettingsFragment extends Fragment {
     private static final int MAX_MINUTES = 55;
     private static final int MIN_MINUTES = 0;
     private static final int MINUTE_INCREMENT = 5;
+    private ImageView ivLogoPreview;
+    private Button btnChangeLogo, btnResetLogo;
+    private Uri selectedLogoUri = null;
+    private static final int PICK_IMAGE_REQUEST = 1001;
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -91,6 +99,26 @@ public class SettingsFragment extends Fragment {
 
         // Listener para eliminar historial
         btnDeleteHistory.setOnClickListener(v -> showDeleteConfirmationDialog());
+
+        loadCustomLogo();
+
+        btnChangeLogo.setOnClickListener(v -> {
+            Intent intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(Intent.createChooser(intent, getString(R.string.select_image)), PICK_IMAGE_REQUEST);
+        });
+
+        btnResetLogo.setOnClickListener(v -> {
+            SharedPreferences prefs = requireActivity().getSharedPreferences("AppPrefs", requireContext().MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.remove("custom_logo_uri");
+            editor.apply();
+
+            ivLogoPreview.setImageResource(R.mipmap.ic_launcher_adaptive_fore);
+            selectedLogoUri = null;
+            Toast.makeText(requireContext(), R.string.logo_reset, Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void initializeViews(View view) {
@@ -120,6 +148,10 @@ public class SettingsFragment extends Fragment {
         dayToggles.add(toggleFriday);
         dayToggles.add(toggleSaturday);
         dayToggles.add(toggleSunday);
+
+        ivLogoPreview = view.findViewById(R.id.ivLogoPreview);
+        btnChangeLogo = view.findViewById(R.id.btnChangeLogo);
+        btnResetLogo = view.findViewById(R.id.btnResetLogo);
     }
 
     private void setupNumberPickers() {
@@ -205,6 +237,13 @@ public class SettingsFragment extends Fragment {
             return;
         }
 
+        if (selectedLogoUri != null) {
+            SharedPreferences prefs = requireActivity().getSharedPreferences("AppPrefs", requireContext().MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("custom_logo_uri", selectedLogoUri.toString());
+            editor.apply();
+        }
+
         saveLanguagePreference(selectedLanguage);
         dbHelper.saveSettings(weeklyHours, workingDays);
         setAppLocale(selectedLanguage);
@@ -252,5 +291,38 @@ public class SettingsFragment extends Fragment {
                 .setNegativeButton(getString(R.string.no), (dialog, which) -> dialog.dismiss())
                 .setCancelable(true)
                 .show();
+    }
+
+    private void loadCustomLogo() {
+        SharedPreferences prefs = requireActivity().getSharedPreferences("AppPrefs", requireContext().MODE_PRIVATE);
+        String logoUriString = prefs.getString("custom_logo_uri", null);
+
+        if (logoUriString != null) {
+            try {
+                selectedLogoUri = Uri.parse(logoUriString);
+                ivLogoPreview.setImageURI(selectedLogoUri);
+            } catch (Exception e) {
+                e.printStackTrace();
+                // If there's an error, reset to default logo
+                ivLogoPreview.setImageResource(R.mipmap.ic_launcher_adaptive_fore);
+            }
+        } else {
+            ivLogoPreview.setImageResource(R.mipmap.ic_launcher_adaptive_fore);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
+            selectedLogoUri = data.getData();
+
+            final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
+            requireContext().getContentResolver().takePersistableUriPermission(selectedLogoUri, takeFlags);
+
+            ivLogoPreview.setImageURI(selectedLogoUri);
+            Toast.makeText(requireContext(), R.string.logo_changed, Toast.LENGTH_SHORT).show();
+        }
     }
 }
