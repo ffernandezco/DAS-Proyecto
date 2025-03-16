@@ -18,8 +18,8 @@ public class WorkTimeCalculator {
         for (Fichaje fichaje : todaysFichajes) {
             if (fichaje.horaEntrada != null && fichaje.horaSalida != null) {
                 try {
-                    Date entrada = sdf.parse(fichaje.horaEntrada);
-                    Date salida = sdf.parse(fichaje.horaSalida);
+                    Date entrada = sdf.parse(ensureTimeFormat(fichaje.horaEntrada));
+                    Date salida = sdf.parse(ensureTimeFormat(fichaje.horaSalida));
 
                     long diffInMillis = salida.getTime() - entrada.getTime();
                     long diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(diffInMillis);
@@ -115,5 +115,16 @@ public class WorkTimeCalculator {
     // Auxiliar para saber si hay un fichaje activo
     public static boolean isCurrentlyClockedIn(List<Fichaje> todaysFichajes) {
         return getActiveFichaje(todaysFichajes) != null;
+    }
+
+    // Auxiliar para tiempos sin segundos
+    public static String ensureTimeFormat(String timeStr) {
+        if (timeStr == null) return null;
+
+        // Añade 00 a los segundos
+        if (timeStr.matches("\\d{2}:\\d{2}")) {
+            return timeStr + ":00";
+        }
+        return timeStr;
     }
 }

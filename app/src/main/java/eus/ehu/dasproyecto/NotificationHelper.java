@@ -39,6 +39,10 @@ public class NotificationHelper {
     }
 
     public void sendWorkCompleteNotification() {
+        if (!areNotificationsEnabled()) {
+            return; // No enviar notificaciones si no se acepta
+        }
+
         Intent intent = new Intent(context, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
@@ -55,24 +59,53 @@ public class NotificationHelper {
 
         try {
             notificationManager.notify(NOTIFICATION_ID, builder.build());
+            recordNotificationSent(context); // Almacenar envío de la notificación
         } catch (SecurityException e) {
             // Si las notificaciones no están habilitadas
             e.printStackTrace();
         }
     }
+
     public boolean shouldSendNotification(Context context) {
+        // Comprobar si las notificaciones están habilitadas
+        if (!areNotificationsEnabled()) {
+            return false;
+        }
+
         SharedPreferences prefs = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
         String lastNotificationDate = prefs.getString("last_notification_date", "");
         String lastNotificationHour = prefs.getString("last_notification_hour", "");
+        String lastNotificationMinute = prefs.getString("last_notification_minute", "");
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         SimpleDateFormat hourFormat = new SimpleDateFormat("HH", Locale.getDefault());
+        SimpleDateFormat minuteFormat = new SimpleDateFormat("mm", Locale.getDefault());
 
         String currentDate = dateFormat.format(new Date());
         String currentHour = hourFormat.format(new Date());
+        String currentMinute = minuteFormat.format(new Date());
 
-        // No repetir notificaciones enviadas
-        return !currentDate.equals(lastNotificationDate) || !currentHour.equals(lastNotificationHour);
+        // Enviar notificaciones si se hace en fechas distintas
+        if (!currentDate.equals(lastNotificationDate)) {
+            return true;
+        }
+
+        // Enviar notificaciones si se hace en horas distintas
+        if (!currentHour.equals(lastNotificationHour)) {
+            return true;
+        }
+
+        int lastMinute = 0;
+        int currentMinuteInt = Integer.parseInt(currentMinute);
+
+        try {
+            lastMinute = Integer.parseInt(lastNotificationMinute);
+        } catch (NumberFormatException e) {
+            return true;
+        }
+
+        // Se envían notificaciones solo si han pasado 10 mins de la anterior
+        return Math.abs(currentMinuteInt - lastMinute) >= 10;
     }
 
     public void recordNotificationSent(Context context) {
@@ -81,10 +114,21 @@ public class NotificationHelper {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         SimpleDateFormat hourFormat = new SimpleDateFormat("HH", Locale.getDefault());
+        SimpleDateFormat minuteFormat = new SimpleDateFormat("mm", Locale.getDefault());
 
         editor.putString("last_notification_date", dateFormat.format(new Date()));
         editor.putString("last_notification_hour", hourFormat.format(new Date()));
+        editor.putString("last_notification_minute", minuteFormat.format(new Date()));
         editor.apply();
     }
 
+    public boolean areNotificationsEnabled() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return NotificationManagerCompat.from(context).areNotificationsEnabled() &&
+                    context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
+                            android.content.pm.PackageManager.PERMISSION_GRANTED;
+        } else {
+            return NotificationManagerCompat.from(context).areNotificationsEnabled();
+        }
+    }
 }

@@ -15,10 +15,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
-public class FichajeDetailsDialog extends DialogFragment {
+public class FichajeDetailsDialog extends DialogFragment implements EditFichajeDialog.OnFichajeUpdatedListener {
 
     private Fichaje fichaje;
+    private OnFichajeUpdatedListener listener;
 
+    public interface OnFichajeUpdatedListener {
+        void onFichajeUpdated();
+    }
+
+    public FichajeDetailsDialog(Fichaje fichaje, OnFichajeUpdatedListener listener) {
+        this.fichaje = fichaje;
+        this.listener = listener;
+    }
+
+    // Constructor - Necesario para compatibilidad
     public FichajeDetailsDialog(Fichaje fichaje) {
         this.fichaje = fichaje;
     }
@@ -34,6 +45,7 @@ public class FichajeDetailsDialog extends DialogFragment {
         TextView tvSalida = view.findViewById(R.id.tvDetailSalida);
         TextView tvLocation = view.findViewById(R.id.tvDetailLocation);
         Button btnVerMapa = view.findViewById(R.id.btnVerMapa);
+        Button btnEditar = view.findViewById(R.id.btnEditar);
         Button btnCerrar = view.findViewById(R.id.btnCerrar);
 
         Context context = view.getContext();
@@ -61,12 +73,37 @@ public class FichajeDetailsDialog extends DialogFragment {
             }
         });
 
-        btnCerrar.setText(context.getString(R.string.cerrar));
+        btnEditar.setOnClickListener(v -> {
+            EditFichajeDialog editDialog = new EditFichajeDialog(fichaje, this);
+            editDialog.show(getParentFragmentManager(), "EditFichajeDialog");
+        });
+
         btnCerrar.setOnClickListener(v -> dismiss());
 
         return view;
     }
 
+    @Override
+    public void onFichajeUpdated() {
+        // Actualiza dinámicamente los detalles
+        if (getView() != null) {
+            Context context = getView().getContext();
+            TextView tvEntrada = getView().findViewById(R.id.tvDetailEntrada);
+            TextView tvSalida = getView().findViewById(R.id.tvDetailSalida);
+
+            tvEntrada.setText(context.getString(R.string.entrada, fichaje.horaEntrada));
+            String salida = fichaje.horaSalida != null ? fichaje.horaSalida : context.getString(R.string.pendiente);
+            tvSalida.setText(context.getString(R.string.salida, salida));
+        }
+
+        // Vuelve a estimar tiempos
+        FichajeEvents.notifyFichajeChanged();
+
+        // Avisa al listener si está activo
+        if (listener != null) {
+            listener.onFichajeUpdated();
+        }
+    }
 
     @Override
     public void onStart() {
